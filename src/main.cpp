@@ -379,6 +379,9 @@ void usercontrol(void)
     }
     // ***axis 1 and 4 should be turning***
     double tPower=Controller1.Axis1.position(pct)+Controller1.Axis4.position(pct);
+    if(abs(tPower)<=10){
+      rightPower=10;
+    }
 
 
     // updates "modifier", a variable created to slow down the robot
