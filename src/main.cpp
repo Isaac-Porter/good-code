@@ -370,8 +370,16 @@ void usercontrol(void)
      
     // creates 2 variables, giving them the controller's vertical axes' values
     double leftPower = Controller1.Axis3.position(percent);
+    if(abs(leftPower)<=10){
+      leftPower=10;
+    }
     double rightPower = Controller1.Axis2.position(percent);
+    if(abs(rightPower)<=10){
+      rightPower=10;
+    }
     // ***axis 1 and 4 should be turning***
+    double tPower=Controller1.Axis1.position(pct)+Controller1.Axis4.position(pct);
+
 
     // updates "modifier", a variable created to slow down the robot
     // when certain buttons are pressed. the speed is multiplied by "modifier"
@@ -400,19 +408,19 @@ void usercontrol(void)
     Controller1.ButtonY.pressed(setFwSpeed);
 
     if(reversed==1){
-      L1.setVelocity(leftPower * modifier, percent);
-      L2.setVelocity(leftPower * modifier, percent);
-      L3.setVelocity(leftPower * modifier, percent);
-      R1.setVelocity(rightPower * modifier, percent);
-      R2.setVelocity(rightPower * modifier, percent);
-      R3.setVelocity(rightPower * modifier, percent);
+      L1.setVelocity((leftPower-tPower) * modifier, percent);
+      L2.setVelocity((leftPower-tPower) * modifier, percent);
+      L3.setVelocity((leftPower-tPower) * modifier, percent);
+      R1.setVelocity((rightPower+tPower) * modifier, percent);
+      R2.setVelocity((rightPower+tPower) * modifier, percent);
+      R3.setVelocity((rightPower+tPower) * modifier, percent);
     }else{
-      L1.setVelocity(rightPower * modifier, percent);
-      L2.setVelocity(rightPower * modifier, percent);
-      L3.setVelocity(rightPower * modifier, percent);
-      R1.setVelocity(leftPower * modifier, percent);
-      R2.setVelocity(leftPower * modifier, percent);
-      R3.setVelocity(leftPower * modifier, percent);
+      L1.setVelocity((rightPower+tPower) * modifier, percent);
+      L2.setVelocity((rightPower+tPower) * modifier, percent);
+      L3.setVelocity((rightPower+tPower) * modifier, percent);
+      R1.setVelocity((leftPower-tPower) * modifier, percent);
+      R2.setVelocity((leftPower-tPower) * modifier, percent);
+      R3.setVelocity((leftPower-tPower) * modifier, percent);
     }
 
     // calls the functions created earlier when their respective buttons are pressed
