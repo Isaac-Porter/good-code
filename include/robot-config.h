@@ -14,6 +14,7 @@ extern motor Shooter;
 extern motor Intake;
 extern motor test;
 extern digital_out loader;
+extern digital_out launcher;
 extern encoder lateralEnc;
 extern encoder straightEnc;
 

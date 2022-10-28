@@ -223,7 +223,8 @@ double modifier = 1;
 double fwSpeed = 85;
 int fwGear = 1;
 int reversed = 1;
-int holding = false;
+bool theCodeMadeMeDoThis=false;
+bool holding = false;
 
 void buttonForward()
 {                             // called when the up arrow button is pressed
@@ -280,11 +281,10 @@ void pewpew(){
 }
 
 void change(){
-  reversed*=-1;
-  Controller1.Screen.setCursor(3,1);
-  Controller1.Screen.clearLine(3);
-  Controller1.Screen.print("reversed");
-  wait(200,msec);
+  theCodeMadeMeDoThis=!theCodeMadeMeDoThis;
+  //Controller1.Screen.clearLine(3);
+  //Controller1.Screen.setCursor(3,1);
+  //Controller1.Screen.print("reversed  %d  ", theCodeMadeMeDoThis);
 }
 
 void toggleBrake(){
@@ -305,10 +305,9 @@ void toggleBrake(){
     R3.setStopping(coast);
   }
   holding=!holding;
-  Controller1.Screen.setCursor(4,1);
-  Controller1.Screen.clearLine(4);
-  Controller1.Screen.print("braked");
-  wait(200,msec);
+  Controller1.Screen.clearLine(3);
+  Controller1.Screen.setCursor(3,1);
+  Controller1.Screen.print("braked  %d", holding);
 }
 
 /*
@@ -360,9 +359,14 @@ int printSpeed(){
       Controller1.Screen.setCursor(1,1);
       Controller1.Screen.print(" %.0f target",fwSpeed);
     }
+    
     wait(100,msec);
   }
   return 0;
+}
+
+void launch(){
+  launcher.set(!launcher.value());
 }
 
 task printBrain(printSpeed);
@@ -386,7 +390,7 @@ void usercontrol(void)
     // ***axis 1 and 4 should be turning***
     double tPower=Controller1.Axis1.position(pct)+Controller1.Axis4.position(pct);
     if(abs(tPower)<=10){
-      rightPower=0;
+      tPower=0;
     }
 
 
@@ -413,6 +417,11 @@ void usercontrol(void)
 
     Controller1.ButtonA.pressed(change); //***not working :( it be broke***
 
+    if(!theCodeMadeMeDoThis){
+      reversed=1;
+    }else{
+      reversed=-1;
+    }
     // call setFwSpeed
     Controller1.ButtonY.pressed(setFwSpeed);
 
@@ -435,8 +444,12 @@ void usercontrol(void)
     // calls the functions created earlier when their respective buttons are pressed
     // giving them a base velocity of 100 percent multiplied by modifier
     
-    Controller1.ButtonUp.pressed(buttonForward);
-    Controller1.ButtonLeft.pressed(buttonBackward);
+    if(Controller1.ButtonUp.pressing()){
+      buttonForward();
+    }
+    if(Controller1.ButtonLeft.pressing()){
+      buttonBackward();
+    }
 
     if(Controller1.ButtonR2.pressing()){
       Shooter.setVelocity(fwSpeed,pct);
@@ -444,6 +457,14 @@ void usercontrol(void)
       Shooter.setVelocity(0,pct);
     }
     Controller1.ButtonR1.pressed(pewpew);
+
+    Controller1.ButtonX.pressed(launch);
+    /*
+    if(Controller1.ButtonX.pressing()){
+      launcher.set(true);
+    }else{
+      launcher.set(false);
+    }*/
     
     if(Controller1.ButtonL1.pressing()){
       Intake.setVelocity(100,pct);
