@@ -281,11 +281,14 @@ void pewpew(){
 
 void change(){
   reversed*=-1;
+  Controller1.Screen.setCursor(3,1);
+  Controller1.Screen.clearLine(3);
+  Controller1.Screen.print("reversed");
   wait(200,msec);
 }
 
 void toggleBrake(){
-  if(holding){
+  if(!holding){
     L1.setStopping(hold);
     L2.setStopping(hold);
     L3.setStopping(hold);
@@ -302,6 +305,9 @@ void toggleBrake(){
     R3.setStopping(coast);
   }
   holding=!holding;
+  Controller1.Screen.setCursor(4,1);
+  Controller1.Screen.clearLine(4);
+  Controller1.Screen.print("braked");
   wait(200,msec);
 }
 
@@ -371,16 +377,16 @@ void usercontrol(void)
     // creates 2 variables, giving them the controller's vertical axes' values
     double leftPower = Controller1.Axis3.position(percent);
     if(abs(leftPower)<=10){
-      leftPower=10;
+      leftPower=0;
     }
     double rightPower = Controller1.Axis2.position(percent);
     if(abs(rightPower)<=10){
-      rightPower=10;
+      rightPower=0;
     }
     // ***axis 1 and 4 should be turning***
     double tPower=Controller1.Axis1.position(pct)+Controller1.Axis4.position(pct);
     if(abs(tPower)<=10){
-      rightPower=10;
+      rightPower=0;
     }
 
 
@@ -404,7 +410,7 @@ void usercontrol(void)
       modifier = 1;
     }
     modifier*=reversed;
-    //Controller1.ButtonRight.pressed(change);
+
     Controller1.ButtonA.pressed(change); //***not working :( it be broke***
 
     // call setFwSpeed
@@ -428,11 +434,6 @@ void usercontrol(void)
 
     // calls the functions created earlier when their respective buttons are pressed
     // giving them a base velocity of 100 percent multiplied by modifier
-    
-    //Controller1.ButtonUp.pressed(buttonForward);
-    //Controller1.ButtonLeft.pressed(buttonLeft);
-    //Controller1.ButtonRight.pressed(buttonRight);
-    //Controller1.ButtonDown.pressed(buttonBackward);
     
     Controller1.ButtonUp.pressed(buttonForward);
     Controller1.ButtonLeft.pressed(buttonBackward);
