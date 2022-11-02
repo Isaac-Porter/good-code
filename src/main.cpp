@@ -93,13 +93,11 @@ void pre_auton(void) {
   Brain.Screen.print("selected");*/
 }
 
-double kp=8,ki=0.007,kd=2;
-double kp2=8,ki2=0.007,kd2=2;
+double kp=10,ki=0.1,kd=0;
 double integral=0,derivative=0;
 double error=0,prevError=0,target=0,output=0,input=0;
 
-double kpt=22,kit=0.01,kdt=5;
-double kpt2=26,kit2=0.035,kdt2=3;
+double kpt=28,kit=0.01,kdt=5;
 double tintegral=0,tderivative=0;
 double terror=0,tprevError=0,ttarget=0, toutput=0, tinput=0;
 
@@ -111,6 +109,7 @@ bool turning=true;
 double pidLim=12000;
 
 int pid(){
+  Controller1.Screen.clearScreen();
   while(true){
     input=(L1.position(degrees)+L2.position(degrees)+L3.position(degrees)+R1.position(degrees)+R2.position(degrees)+R3.position(degrees))/6;
     error=target-input;
@@ -118,6 +117,7 @@ int pid(){
     derivative=error-prevError;
     prevError=error;
 
+    output=kp*error+ki*integral+kd*derivative;
 
     if(turning){
       tinput=(L1.position(degrees)+L2.position(degrees)+L3.position(degrees)-R1.position(degrees)-R2.position(degrees)-R3.position(degrees))/6;
@@ -125,6 +125,10 @@ int pid(){
       tintegral+=terror;
       tderivative=terror-tprevError;
       tprevError=terror;
+      
+      toutput=kpt*terror+kit*tintegral+kdt*tderivative;
+    }else{
+      toutput=0;
     }
 
     Controller1.Screen.setCursor(3, 1);
@@ -225,14 +229,21 @@ void autonomous(void) {
   R2.setStopping(coast);
   R3.setStopping(coast);
 
-  /*
 
+  
+  resetPID();
+  turning=false;
+  target=1000;
+  wait(5000,msec);
+  pid_task.stop();
+  
+
+  /*
   std::vector<Point> pathNodes;
   pathNodes.push_back(Point(1,1));
   pathNodes.push_back(Point(1,100));
   pathNodes.push_back(Point(100,100));
   path=smooth(addPoints(pathNodes,6),0.15,0.75,0.001);
-  
   task control(chassis_control);
   */
 }
