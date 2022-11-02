@@ -220,10 +220,10 @@ void autonomous(void) {
 
 
 double modifier = 1;
-double fwSpeed = 85;
+double fwSpeed = 75;
 int fwGear = 1;
 int reversed = 1;
-bool theCodeMadeMeDoThis=false;
+bool reversed_bool=false;
 bool holding = false;
 
 void buttonForward()
@@ -236,7 +236,7 @@ void buttonForward()
   R3.setVelocity(modifier*100, percent);
 }
 void buttonBackward()
-{                              // called when down arrow button pressed
+{                              // called when left arrow button pressed
   L1.setVelocity(-modifier*100, percent); // moves robot backward
   L2.setVelocity(-modifier*100, percent);
   L3.setVelocity(-modifier*100, percent);
@@ -245,7 +245,7 @@ void buttonBackward()
   R3.setVelocity(-modifier*100, percent);
 }
 void buttonLeft()
-{                              // called when left arrow button pressed
+{                              // not used
   L1.setVelocity(-modifier*100, percent); // turns robot left
   L2.setVelocity(-modifier*100, percent);
   L3.setVelocity(-modifier*100, percent);
@@ -254,7 +254,7 @@ void buttonLeft()
   R3.setVelocity(modifier*100, percent);
 }
 void buttonRight()
-{                             // called when right arrow button is pressed
+{                             // not used
   L1.setVelocity(modifier*100, percent); // turns robot right
   L2.setVelocity(modifier*100, percent);
   L3.setVelocity(modifier*100, percent);
@@ -263,14 +263,14 @@ void buttonRight()
   R3.setVelocity(-modifier*100, percent);
 }
 
-void pewpew(){
-  int t=0;
+void pewpew(){  // function that controls the loading of discs into the shooter
+  int t=0;   // only runs when the flywheel is at a certain speed
   while(Controller1.ButtonR1.pressing() && Shooter.velocity(pct)>fwSpeed-1){
-    loader.set(true);
-    wait(200,msec);
+    loader.set(true); 
+    wait(200,msec);  // actuates the piston to launch the disc
     loader.set(false);
     while(Shooter.velocity(pct)<fwSpeed-1){
-      wait(10,msec);
+      wait(10,msec);//waits until the flywheel is back up to target speed
       t++;
       if(t>50){
         break;
@@ -280,14 +280,11 @@ void pewpew(){
   loader.set(false);
 }
 
-void change(){
-  theCodeMadeMeDoThis=!theCodeMadeMeDoThis;
-  //Controller1.Screen.clearLine(3);
-  //Controller1.Screen.setCursor(3,1);
-  //Controller1.Screen.print("reversed  %d  ", theCodeMadeMeDoThis);
+void change(){ //function that reverses a boolean that controls the direction of the robot
+  reversed_bool=!reversed_bool;
 }
 
-void toggleBrake(){
+void toggleBrake(){ //function that toggles the motors between braking and coasting
   if(!holding){
     L1.setStopping(hold);
     L2.setStopping(hold);
@@ -305,45 +302,26 @@ void toggleBrake(){
     R3.setStopping(coast);
   }
   holding=!holding;
-  Controller1.Screen.clearLine(3);
-  Controller1.Screen.setCursor(3,1);
-  Controller1.Screen.print("braked  %d", holding);
 }
 
-/*
-void speedUp(){
-  fwSpeed+=10.0;
-  Controller1.Screen.clearLine(1);
-  Controller1.Screen.setCursor(1,1);
-  Controller1.Screen.print(" %.0f target",fwSpeed);
-  wait(200,msec);
-}
-void speedDown(){
-  fwSpeed-=10.0;
-  Controller1.Screen.clearLine(1);
-  Controller1.Screen.setCursor(1,1);
-  Controller1.Screen.print(" %.0f target",fwSpeed);
-  wait(200,msec);
-}*/
-
-void setFwSpeed(){
+void setFwSpeed(){ //cycles between 3 target speeds for the flywheel
   fwGear++;
   if (fwGear > 3) fwGear = 1;
 
   switch (fwGear) {
     case 1:
-      fwSpeed = 85;
+      fwSpeed = 75;
       break;
     case 2:
       fwSpeed = 80;
       break;
     case 3:
-      fwSpeed = 75;
+      fwSpeed = 85;
       break;
   }
 }
 
-int printSpeed(){
+int printSpeed(){ //prints information about the flywheel to the controller screen
   double ps=0;
   double pt=0;
   while(true){
@@ -365,7 +343,7 @@ int printSpeed(){
   return 0;
 }
 
-void launch(){
+void launch(){  //launches the endgame catapults
   launcher.set(!launcher.value());
 }
 
@@ -387,12 +365,6 @@ void usercontrol(void)
     if(abs(rightPower)<=10){
       rightPower=0;
     }
-    // ***axis 1 and 4 should be turning***
-    double tPower=Controller1.Axis1.position(pct)+Controller1.Axis4.position(pct);
-    if(abs(tPower)<=10){
-      tPower=0;
-    }
-
 
     // updates "modifier", a variable created to slow down the robot
     // when certain buttons are pressed. the speed is multiplied by "modifier"
@@ -415,35 +387,33 @@ void usercontrol(void)
     }
     modifier*=reversed;
 
-    Controller1.ButtonA.pressed(change); //***not working :( it be broke***
-
-    if(!theCodeMadeMeDoThis){
+    // flips the "front" of the robot, from the controllers perpective
+    Controller1.ButtonA.pressed(change);
+    if(!reversed_bool){
       reversed=1;
     }else{
       reversed=-1;
     }
-    // call setFwSpeed
+    // call setFwSpeed to cycle through the different speeds
     Controller1.ButtonY.pressed(setFwSpeed);
 
     if(reversed==1){
-      L1.setVelocity((leftPower-tPower) * modifier, percent);
-      L2.setVelocity((leftPower-tPower) * modifier, percent);
-      L3.setVelocity((leftPower-tPower) * modifier, percent);
-      R1.setVelocity((rightPower+tPower) * modifier, percent);
-      R2.setVelocity((rightPower+tPower) * modifier, percent);
-      R3.setVelocity((rightPower+tPower) * modifier, percent);
+      L1.setVelocity((leftPower) * modifier, percent);
+      L2.setVelocity((leftPower) * modifier, percent);
+      L3.setVelocity((leftPower) * modifier, percent);
+      R1.setVelocity((rightPower) * modifier, percent);
+      R2.setVelocity((rightPower) * modifier, percent);
+      R3.setVelocity((rightPower) * modifier, percent);
     }else{
-      L1.setVelocity((rightPower+tPower) * modifier, percent);
-      L2.setVelocity((rightPower+tPower) * modifier, percent);
-      L3.setVelocity((rightPower+tPower) * modifier, percent);
-      R1.setVelocity((leftPower-tPower) * modifier, percent);
-      R2.setVelocity((leftPower-tPower) * modifier, percent);
-      R3.setVelocity((leftPower-tPower) * modifier, percent);
+      L1.setVelocity((rightPower) * modifier, percent);
+      L2.setVelocity((rightPower) * modifier, percent);
+      L3.setVelocity((rightPower) * modifier, percent);
+      R1.setVelocity((leftPower) * modifier, percent);
+      R2.setVelocity((leftPower) * modifier, percent);
+      R3.setVelocity((leftPower) * modifier, percent);
     }
 
     // calls the functions created earlier when their respective buttons are pressed
-    // giving them a base velocity of 100 percent multiplied by modifier
-    
     if(Controller1.ButtonUp.pressing()){
       buttonForward();
     }
@@ -451,21 +421,19 @@ void usercontrol(void)
       buttonBackward();
     }
 
+    // runs the flywheel at the target speed when R2 is pressed
     if(Controller1.ButtonR2.pressing()){
       Shooter.setVelocity(fwSpeed,pct);
     }else{
       Shooter.setVelocity(0,pct);
     }
+    // calls the loading function
     Controller1.ButtonR1.pressed(pewpew);
 
+    // calls the endgame launch function
     Controller1.ButtonX.pressed(launch);
-    /*
-    if(Controller1.ButtonX.pressing()){
-      launcher.set(true);
-    }else{
-      launcher.set(false);
-    }*/
     
+    // controls the intake using the left bumpers
     if(Controller1.ButtonL1.pressing()){
       Intake.setVelocity(100,pct);
     }else if(Controller1.ButtonL2.pressing()){
@@ -475,9 +443,7 @@ void usercontrol(void)
     }
     
 
-    // brakes the wheels if either the R1 or R2 buttons are pressed
-    // this helps with climbing, allowing the robot to stop instead of sliding off
-
+    // calls the toggle brake function
     Controller1.ButtonRight.pressed(toggleBrake);
 
     // spins all of the motors
