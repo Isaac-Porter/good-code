@@ -34,10 +34,14 @@
 #include "ButtonClass.h"
 #include "path.h"
 #include "chassis_control.h"
+#include "graph-stuff.h"
 
 using namespace vex;
 
 competition Competition;
+
+//task drawFieldTask(drawField);
+task odoTask(positionTracking);
 
 int auton=0;
 double T=20;
@@ -93,7 +97,8 @@ void pre_auton(void) {
   Brain.Screen.print("selected");*/
 }
 
-double kp=10,ki=0.1,kd=0;
+
+double kp=10,ki=0.0,kd=10;
 double integral=0,derivative=0;
 double error=0,prevError=0,target=0,output=0,input=0;
 
@@ -145,7 +150,7 @@ int pid(){
     }else if(toutput<-12000){
       output=-12000;
     }
-
+    
     R1.spin(forward,(output-toutput)/1000,volt);
     R2.spin(forward,(output-toutput)/1000,volt);
     R3.spin(forward,(output-toutput)/1000,volt);
@@ -165,6 +170,8 @@ int pid(){
     }else{
       atAngle=false;
     }
+
+    //g_input=input;
   }
   return 1;
 }
@@ -215,9 +222,9 @@ void fw(){
   }
 }
 
-
-task drawFieldTask(drawField);
-task odoTask(positionTracking);
+double g_target=500;
+//double g_input=0;
+task graphthePID(graph);
 task pid_task(pid);
 //task move(chassis_control);
 
@@ -233,9 +240,10 @@ void autonomous(void) {
   
   resetPID();
   turning=false;
-  target=1000;
+  target=500;
   wait(5000,msec);
   pid_task.stop();
+  graphthePID.stop();
   
 
   /*
@@ -474,7 +482,7 @@ void usercontrol(void)
     }
     
 
-    // calls the toggle brake function
+    // calls the toggle ke function
     Controller1.ButtonRight.pressed(toggleBrake);
 
     // spins all of the motors
