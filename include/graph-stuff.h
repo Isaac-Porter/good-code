@@ -5,3 +5,4 @@ extern double g_speed;
 extern double g_target;
 
 int graph();
+int tgraph();

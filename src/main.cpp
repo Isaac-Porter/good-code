@@ -40,7 +40,7 @@ using namespace vex;
 
 competition Competition;
 
-//task drawFieldTask(drawField);
+task drawFieldTask(drawField);
 task odoTask(positionTracking);
 
 int auton=0;
@@ -98,11 +98,11 @@ void pre_auton(void) {
 }
 
 
-double kp=10,ki=0.0,kd=10;
+double kp=10,ki=0.01,kd=10;
 double integral=0,derivative=0;
 double error=0,prevError=0,target=0,output=0,input=0;
 
-double kpt=28,kit=0.01,kdt=5;
+double kpt=15,kit=0.01,kdt=10;
 double tintegral=0,tderivative=0;
 double terror=0,tprevError=0,ttarget=0, toutput=0, tinput=0;
 
@@ -114,19 +114,32 @@ bool turning=true;
 double pidLim=12000;
 
 int pid(){
-  Controller1.Screen.clearScreen();
+  //Controller1.Screen.clearScreen();
+  L1.setPosition(0,degrees);
+  L2.setPosition(0,degrees);
+  L3.setPosition(0,degrees);
+  R1.setPosition(0,degrees);
+  R2.setPosition(0,degrees);
+  R3.setPosition(0,degrees);
+  
   while(true){
     input=(L1.position(degrees)+L2.position(degrees)+L3.position(degrees)+R1.position(degrees)+R2.position(degrees)+R3.position(degrees))/6;
     error=target-input;
+    if(prevError==0 && error!=0){
+      prevError=error;
+    }
     integral+=error;
     derivative=error-prevError;
     prevError=error;
-
+    
     output=kp*error+ki*integral+kd*derivative;
 
     if(turning){
       tinput=(L1.position(degrees)+L2.position(degrees)+L3.position(degrees)-R1.position(degrees)-R2.position(degrees)-R3.position(degrees))/6;
       terror=ttarget-tinput;
+      if(tprevError==0 && terror!=0){
+        tprevError=error;
+      }
       tintegral+=terror;
       tderivative=terror-tprevError;
       tprevError=terror;
@@ -138,17 +151,17 @@ int pid(){
 
     Controller1.Screen.setCursor(3, 1);
     Controller1.Screen.clearLine(3);
-    Controller1.Screen.print("%f",error);
+    Controller1.Screen.print("%f",Shooter.velocity(pct));
 
     if(output>pidLim){
       output=pidLim;
     }else if(output<-pidLim){
       output=-pidLim;
     }
-    if(toutput>12000){
-      output=12000;
-    }else if(toutput<-12000){
-      output=-12000;
+    if(toutput>pidLim){
+      output=pidLim;
+    }else if(toutput<-pidLim){
+      output=-pidLim;
     }
     
     R1.spin(forward,(output-toutput)/1000,volt);
@@ -160,18 +173,18 @@ int pid(){
 
     wait(10,msec);
 
-    if(derivative<0.5 && derivative>-0.5 /*&& error<200 && error>-200*/){
+    if(derivative<0.5 && derivative>-0.5 && error<100 && error>-100){
       atTarget=true;
     }else{
       atTarget=false;
     }
-    if(tderivative<0.5 && tderivative>-0.5 /*&& terror<50 && terror >-50*/){
+    if(tderivative<0.5 && tderivative>-0.5 && terror<50 && terror >-50){
       atAngle=true;
     }else{
       atAngle=false;
     }
 
-    //g_input=input;
+    g_target=ttarget;
   }
   return 1;
 }
@@ -215,35 +228,139 @@ void tw(){//function that will wait until the robotis at its turning target
     }
   };
 }
-void fw(){
-  wait(600,msec);
-  while((derivative>5 || derivative<-5)/* && (error>200 || error <-200)*/){
+void ew(){
+  wait(200,msec);
+  while((derivative>0.5 || derivative<-0.5)/* && (error>200 || error <-200)*/){
+    wait(3,msec);
+  }
+}
+void etw(){
+  wait(200,msec);
+  while((tderivative>0.5 || tderivative<-0.5)/* && (error>200 || error <-200)*/){
     wait(3,msec);
   }
 }
 
-double g_target=500;
+void pewpew_auto(int d, int p){  // function that controls the loading of discs into the shooter
+  //Shooter.spin(forward,100,pct);
+  wait(200,msec);
+  for(int i=0; i<d; i++){
+    while(Shooter.velocity(pct)<p){
+      wait(10,msec);//waits until the flywheel is back up to target speed
+    }
+    loader.set(true); 
+    wait(200,msec);  // actuates the piston to launch the disc
+    loader.set(false);
+  }
+  Shooter.stop();
+}
+
+void left_side(){
+  target=150;
+  Intake.spin(forward,-100,pct);
+  Shooter.spin(forward,87,pct);
+  wait(800,msec);
+  Intake.stop();
+
+  target=-200;
+  ew();
+  wait(300,msec);
+
+  ttarget=-170;
+  wait(500,msec);
+  pewpew_auto(2,86);
+  wait(400,msec);
+
+  resetPID();
+
+  ttarget=-710;
+  tw();
+  
+  resetPID();
+  target=2400;
+  pidLim=7500;
+  Intake.spin(forward,100,pct);
+  wait(800,msec);
+  pidLim=2000;
+  pw();
+  pidLim=12000;
+
+  ttarget=570;
+  Shooter.spin(forward,85,pct);
+  pewpew_auto(3,85);
+}
+
+void win_point(){
+  target=170;
+  Intake.spin(forward,-100,pct);
+  Shooter.spin(forward,86,pct);
+  wait(800,msec);
+  Intake.stop();
+
+  target=-200;
+  ew();
+  wait(300,msec);
+
+  ttarget=-170;
+  wait(500,msec);
+  pewpew_auto(2,85);
+  wait(400,msec);
+
+  resetPID();
+  ttarget=350;
+  wait(1000,msec);
+
+  resetPID();
+  ttarget=100;
+  target=-7200;
+  wait(300,msec);
+  ew();
+
+  ttarget=1400;
+  tw();
+
+  resetPID();
+  Intake.spin(forward,100,pct);
+  target=1500;
+  wait(300,msec);
+  pw();
+
+  ttarget=400;
+  wait(300,msec);
+  etw();
+
+  resetPID();
+  target=500;
+  Intake.spin(forward,-100,pct);
+  wait(4500,msec);
+  Intake.stop();
+  
+}
+
+double g_target=0;
 //double g_input=0;
-task graphthePID(graph);
 task pid_task(pid);
+//task graphthePID(tgraph);
 //task move(chassis_control);
 
 void autonomous(void) {
+  pid_task.stop();
+  task pid_task(pid);
   L1.setStopping(coast);
   L2.setStopping(coast);
   L3.setStopping(coast);
   R1.setStopping(coast);
   R2.setStopping(coast);
   R3.setStopping(coast);
-
-
-  
   resetPID();
-  turning=false;
-  target=500;
-  wait(5000,msec);
+
+
+  //turning=false;
+  
+  left_side();
+
+
   pid_task.stop();
-  graphthePID.stop();
   
 
   /*
@@ -385,10 +502,10 @@ void launch(){  //launches the endgame catapults
   launcher.set(!launcher.value());
 }
 
-task printBrain(printSpeed);
 
 void usercontrol(void)
 {
+  task printBrain(printSpeed);
   pid_task.stop();
   //move.stop();
   modifier = 1;

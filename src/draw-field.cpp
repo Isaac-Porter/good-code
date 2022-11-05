@@ -157,7 +157,7 @@ int drawField () {
     Brain.Screen.printAt(250,100,"right mid: %8.3f",R2.temperature(temperatureUnits::celsius));
     Brain.Screen.printAt(250,120,"right back: %8.3f",R3.temperature(temperatureUnits::celsius));
     Brain.Screen.printAt(250,140,"Intake: %8.3f",Intake.temperature(temperatureUnits::celsius));
-    Brain.Screen.printAt(250,160,"Lift: %8.3f",Shooter.temperature(temperatureUnits::celsius));
+    Brain.Screen.printAt(250,160,"Shooter: %8.3f",Shooter.temperature(temperatureUnits::celsius));
   
     Brain.Screen.printAt(250,190,"X: %f",xPosGlobal);
     Brain.Screen.printAt(250,210,"Y: %f",yPosGlobal);
