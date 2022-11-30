@@ -276,7 +276,7 @@ void left_side(){
 
   resetPID();
 
-  ttarget=-740;
+  ttarget=-730;//-740
   tw();
   
   resetPID();
@@ -288,7 +288,9 @@ void left_side(){
   pw();
   pidLim=12000;
 
+  resetPID();
   ttarget=550;
+  tw();
   Shooter.spin(forward,85,pct);
   pewpew_auto(3,85);
 }
