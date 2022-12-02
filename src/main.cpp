@@ -178,7 +178,7 @@ int pid(){
     }else{
       atTarget=false;
     }
-    if(tderivative<0.5 && tderivative>-0.5 && terror<50 && terror >-50){
+    if(tderivative<0.5 && tderivative>-0.5 && terror<100 && terror >-100){
       atAngle=true;
     }else{
       atAngle=false;
@@ -247,7 +247,7 @@ void pewpew_auto(int d, int p){  // function that controls the loading of discs 
   wait(200,msec);
   for(int i=0; i<d; i++){
     t=0;
-    while(Shooter.velocity(pct)<p && t<20){
+    while(Shooter.velocity(pct)<p || t<20){
       wait(10,msec);//waits until the flywheel is back up to target speed
       t++;
     }
@@ -262,21 +262,21 @@ void left_side(){
   target=200;
   Intake.spin(forward,-100,pct);
   Shooter.spin(forward,86,pct);
-  wait(550,msec);
+  wait(590,msec);
   Intake.stop();
 
   target=-200;
   ew();
   wait(300,msec);
 
-  ttarget=-135;
+  ttarget=-145;
   wait(500,msec);
   pewpew_auto(2,86);
   wait(400,msec);
 
   resetPID();
 
-  ttarget=-730;//-740
+  ttarget=-720;//-740
   tw();
   
   resetPID();
@@ -289,10 +289,10 @@ void left_side(){
   pidLim=12000;
 
   resetPID();
-  ttarget=550;
+  ttarget=580;
+  Shooter.spin(forward,80,pct);
   tw();
-  Shooter.spin(forward,85,pct);
-  pewpew_auto(3,85);
+  pewpew_auto(3,80);
 }
 
 void win_point(){
