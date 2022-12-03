@@ -239,7 +239,7 @@ void ew(){
   }
 }
 void etw(){
-  wait(200,msec);
+  wait(400,msec);
   while((tderivative>0.5 || tderivative<-0.5)/* && (error>200 || error <-200)*/){
     wait(3,msec);
   }
@@ -248,7 +248,7 @@ void etw(){
 void pewpew_auto(int d, int p){  // function that controls the loading of discs into the shooter
   //Shooter.spin(forward,100,pct);
   int t=0;
-  wait(200,msec);
+  //wait(200,msec);
   for(int i=0; i<d; i++){
     t=0;
     while(Shooter.velocity(pct)<p || t<20){
@@ -263,36 +263,35 @@ void pewpew_auto(int d, int p){  // function that controls the loading of discs 
 }
 
 void left_side(){
-  target=150;
+  target=170;
   Intake.spin(forward,-100,pct);
-  Shooter.spin(forward,87,pct);
-  wait(800,msec);
+  Shooter.spin(forward,87.5,pct);
+  wait(650,msec);
   Intake.stop();
 
   target=-170;
   ew();
   wait(300,msec);
 
-  ttarget=-170;
-  wait(500,msec);
-  pewpew_auto(2,85);
+  ttarget=-140;
+  wait(400,msec);
+  pewpew_auto(2,87.5);
   wait(400,msec);
 
-  resetPID();
+  ttarget=-870;
+  etw();
+  wait(200,msec);
 
-  ttarget=-710;
-  tw();
-  
-  resetPID();
-  target=2400;
+  target=2570;
   pidLim=7500;
   Intake.spin(forward,100,pct);
-  wait(800,msec);
+  wait(600,msec);
   pidLim=2000;
   pw();
   pidLim=12000;
+  resetPID();
 
-  ttarget=570;
+  ttarget=595;
   Shooter.spin(forward,85,pct);
   pewpew_auto(3,85);
 }
@@ -300,46 +299,54 @@ void left_side(){
 void win_point(){
   target=170;
   Intake.spin(forward,-100,pct);
-  Shooter.spin(forward,86,pct);
-  wait(800,msec);
+  Shooter.spin(forward,87.5,pct);
+  wait(650,msec);
   Intake.stop();
 
-  target=-200;
+  target=-170;
   ew();
   wait(300,msec);
 
-  ttarget=-190;
-  wait(500,msec);
-  pewpew_auto(2,85);
+  ttarget=-140;
+  wait(300,msec);
+  pewpew_auto(2,87.5);
   wait(400,msec);
 
-  resetPID();
-  ttarget=350;
-  wait(1000,msec);
+  ttarget=-930;
+  etw();
 
-  resetPID();
-  target=-7200;
+  Intake.spin(forward,100,pct);
+  target=7000;
   wait(300,msec);
   ew();
 
-  ttarget=1400;
+  resetPID();
+  ttarget=-250;
+  etw();
+
+  target=1200;
+  pw();
+
+  ttarget=230;
   tw();
 
   resetPID();
-  Intake.spin(forward,100,pct);
-  target=1500;
-  wait(300,msec);
-  pw();
-
-  ttarget=400;
-  wait(300,msec);
-  etw();
-
-  resetPID();
-  target=500;
+  target=400;
   Intake.spin(forward,-100,pct);
-  wait(4500,msec);
+  Shooter.spin(forward,87.5,pct);
+  ew();
+  resetPID();
+  wait(600,msec);
   Intake.stop();
+
+  target=-250;
+  ew();
+  wait(300,msec);
+
+  ttarget=90;
+  wait(400,msec);
+  pewpew_auto(3,87.5);
+  wait(400,msec);
   
 }
 
@@ -363,7 +370,7 @@ void autonomous(void) {
 
   //turning=false;
   
-  left_side();
+  win_point();
 
 
   pid_task.stop();
