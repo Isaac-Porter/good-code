@@ -54,6 +54,10 @@ void pre_auton(void) {
   vexcodeInit();
   Shooter.setStopping(coast);
   Intake.setStopping(coast);
+  
+  launcher2.set(!launcher2.value());
+  launcher1.set(!launcher1.value());
+  
   /*
   lcdButton b1(50,50,100,50,"WP","#123456");
   lcdButton b2(200,50,100,50,"LEFT TOWER","#123456");
@@ -178,7 +182,7 @@ int pid(){
     }else{
       atTarget=false;
     }
-    if(tderivative<0.5 && tderivative>-0.5 && terror<50 && terror >-50){
+    if(tderivative<0.5 && tderivative>-0.5 && terror<100 && terror >-100){
       atAngle=true;
     }else{
       atAngle=false;
@@ -257,23 +261,24 @@ void pewpew_auto(int d, int p){  // function that controls the loading of discs 
 
 void left_side(){
   target=150;
+  wait(200,msec);
   Intake.spin(forward,-100,pct);
-  Shooter.spin(forward,87,pct);
-  wait(800,msec);
+  Shooter.spin(forward,86,pct);
+  wait(400,msec);
   Intake.stop();
 
-  target=-200;
+  target=-170;
   ew();
   wait(300,msec);
 
-  ttarget=-170;
+  ttarget=-140;//-170
   wait(500,msec);
-  pewpew_auto(2,86);
+  pewpew_auto(2,85);
   wait(400,msec);
 
   resetPID();
 
-  ttarget=-710;
+  ttarget=-740;//-710
   tw();
   
   resetPID();
@@ -285,7 +290,7 @@ void left_side(){
   pw();
   pidLim=12000;
 
-  ttarget=570;
+  ttarget=657;//570
   Shooter.spin(forward,85,pct);
   pewpew_auto(3,85);
 }
@@ -498,8 +503,11 @@ int printSpeed(){ //prints information about the flywheel to the controller scre
   return 0;
 }
 
-void launch(){  //launches the endgame catapults
-  launcher.set(!launcher.value());
+void launch1(){  //launches the endgame catapults
+  launcher1.set(!launcher1.value());
+}
+void launch2(){  //launches the endgame catapults
+  launcher2.set(!launcher2.value());
 }
 
 
@@ -544,7 +552,7 @@ void usercontrol(void)
     modifier*=reversed;
 
     // flips the "front" of the robot, from the controllers perpective
-    Controller1.ButtonA.pressed(change);
+    //Controller1.ButtonA.pressed(change);
     if(!reversed_bool){
       reversed=1;
     }else{
@@ -587,7 +595,8 @@ void usercontrol(void)
     Controller1.ButtonR1.pressed(pewpew);
 
     // calls the endgame launch function
-    Controller1.ButtonX.pressed(launch);
+    Controller1.ButtonX.pressed(launch1);
+    Controller1.ButtonA.pressed(launch2);
     
     // controls the intake using the left bumpers
     if(Controller1.ButtonL1.pressing()){
