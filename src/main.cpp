@@ -182,7 +182,7 @@ int pid(){
     }else{
       atTarget=false;
     }
-    if(tderivative<0.5 && tderivative>-0.5 && terror<100 && terror >-100){
+    if(tderivative<0.5 && tderivative>-0.5 && terror<50 && terror >-50){
       atAngle=true;
     }else{
       atAngle=false;
@@ -247,10 +247,13 @@ void etw(){
 
 void pewpew_auto(int d, int p){  // function that controls the loading of discs into the shooter
   //Shooter.spin(forward,100,pct);
+  int t=0;
   wait(200,msec);
   for(int i=0; i<d; i++){
-    while(Shooter.velocity(pct)<p){
+    t=0;
+    while(Shooter.velocity(pct)<p || t<20){
       wait(10,msec);//waits until the flywheel is back up to target speed
+      t++;
     }
     loader.set(true); 
     wait(200,msec);  // actuates the piston to launch the disc
@@ -261,24 +264,23 @@ void pewpew_auto(int d, int p){  // function that controls the loading of discs 
 
 void left_side(){
   target=150;
-  wait(200,msec);
   Intake.spin(forward,-100,pct);
-  Shooter.spin(forward,86,pct);
-  wait(400,msec);
+  Shooter.spin(forward,87,pct);
+  wait(800,msec);
   Intake.stop();
 
   target=-170;
   ew();
   wait(300,msec);
 
-  ttarget=-140;//-170
+  ttarget=-170;
   wait(500,msec);
   pewpew_auto(2,85);
   wait(400,msec);
 
   resetPID();
 
-  ttarget=-740;//-710
+  ttarget=-710;
   tw();
   
   resetPID();
@@ -290,7 +292,7 @@ void left_side(){
   pw();
   pidLim=12000;
 
-  ttarget=657;//570
+  ttarget=570;
   Shooter.spin(forward,85,pct);
   pewpew_auto(3,85);
 }
@@ -306,7 +308,7 @@ void win_point(){
   ew();
   wait(300,msec);
 
-  ttarget=-170;
+  ttarget=-190;
   wait(500,msec);
   pewpew_auto(2,85);
   wait(400,msec);
@@ -316,7 +318,6 @@ void win_point(){
   wait(1000,msec);
 
   resetPID();
-  ttarget=100;
   target=-7200;
   wait(300,msec);
   ew();
@@ -425,6 +426,13 @@ void buttonRight()
 
 void pewpew(){  // function that controls the loading of discs into the shooter
   int t=0;   // only runs when the flywheel is at a certain speed
+  while(Shooter.velocity(pct)<fwSpeed-1){
+      wait(10,msec);//waits until the flywheel is back up to target speed
+      t++;
+      if(t>100){
+        break;
+      }
+    }
   while(Controller1.ButtonR1.pressing() && Shooter.velocity(pct)>fwSpeed-1){
     loader.set(true); 
     wait(200,msec);  // actuates the piston to launch the disc
