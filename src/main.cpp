@@ -282,7 +282,7 @@ void left_side(){
   etw();
   wait(200,msec);
 
-  target=2570;
+  target=2700;
   pidLim=7500;
   Intake.spin(forward,100,pct);
   wait(600,msec);
@@ -291,7 +291,7 @@ void left_side(){
   pidLim=12000;
   resetPID();
 
-  ttarget=595;
+  ttarget=606;
   Shooter.spin(forward,85,pct);
   pewpew_auto(3,85);
 }
@@ -368,10 +368,8 @@ void autonomous(void) {
   resetPID();
 
 
-  //turning=false;
-  
-  win_point();
-
+  //win_point();
+  left_side();
 
   pid_task.stop();
   
