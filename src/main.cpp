@@ -265,7 +265,6 @@ void pewpew_auto(int d, int p){  // function that controls the loading of discs 
 void left_side(){
   target=170;
   Intake.spin(forward,-100,pct);
-  Shooter.spin(forward,87.5,pct);
   wait(650,msec);
   Intake.stop();
 
@@ -274,8 +273,9 @@ void left_side(){
   wait(300,msec);
 
   ttarget=-140;
+  Shooter.spin(forward,87,pct);
   wait(400,msec);
-  pewpew_auto(2,87.5);
+  pewpew_auto(2,87);
   wait(400,msec);
 
   ttarget=-870;
@@ -288,6 +288,7 @@ void left_side(){
   wait(600,msec);
   pidLim=2000;
   pw();
+
   pidLim=12000;
   resetPID();
 
@@ -312,7 +313,7 @@ void win_point(){
   pewpew_auto(2,87.5);
   wait(400,msec);
 
-  ttarget=-930;
+  ttarget=-910;
   etw();
 
   Intake.spin(forward,100,pct);
@@ -327,11 +328,11 @@ void win_point(){
   target=1200;
   pw();
 
-  ttarget=230;
+  ttarget=200;
   tw();
 
   resetPID();
-  target=400;
+  target=270;
   Intake.spin(forward,-100,pct);
   Shooter.spin(forward,87.5,pct);
   ew();
@@ -367,9 +368,7 @@ void autonomous(void) {
   R3.setStopping(coast);
   resetPID();
 
-
-  //win_point();
-  left_side();
+  win_point();
 
   pid_task.stop();
   
