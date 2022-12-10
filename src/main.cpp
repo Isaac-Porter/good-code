@@ -55,8 +55,6 @@ void pre_auton(void) {
   Shooter.setStopping(coast);
   Intake.setStopping(coast);
   
-  launcher2.set(!launcher2.value());
-  launcher1.set(!launcher1.value());
   
   /*
   lcdButton b1(50,50,100,50,"WP","#123456");
@@ -263,9 +261,9 @@ void pewpew_auto(int d, int p){  // function that controls the loading of discs 
 }
 
 void left_side(){
-  target=170;
+  target=270;
   Intake.spin(forward,-100,pct);
-  wait(650,msec);
+  wait(500,msec);
   Intake.stop();
 
   target=-170;
@@ -283,10 +281,10 @@ void left_side(){
   wait(200,msec);
 
   target=2700;
-  pidLim=7500;
+  pidLim=1200;
   Intake.spin(forward,100,pct);
-  wait(600,msec);
-  pidLim=2000;
+  wait(400,msec);
+  pidLim=3000;
   pw();
 
   pidLim=12000;
@@ -325,14 +323,14 @@ void win_point(){
   ttarget=-250;
   etw();
 
-  target=1200;
+  target=900;
   pw();
 
   ttarget=200;
   tw();
 
   resetPID();
-  target=270;
+  target=800;
   Intake.spin(forward,-100,pct);
   Shooter.spin(forward,87.5,pct);
   ew();
@@ -344,7 +342,7 @@ void win_point(){
   ew();
   wait(300,msec);
 
-  ttarget=90;
+  ttarget=-130;
   wait(400,msec);
   pewpew_auto(3,87.5);
   wait(400,msec);
@@ -368,7 +366,7 @@ void autonomous(void) {
   R3.setStopping(coast);
   resetPID();
 
-  win_point();
+  left_side();
 
   pid_task.stop();
   
@@ -515,14 +513,6 @@ int printSpeed(){ //prints information about the flywheel to the controller scre
   return 0;
 }
 
-void launch1(){  //launches the endgame catapults
-  launcher1.set(!launcher1.value());
-}
-void launch2(){  //launches the endgame catapults
-  launcher2.set(!launcher2.value());
-}
-
-
 void usercontrol(void)
 {
   task printBrain(printSpeed);
@@ -590,12 +580,13 @@ void usercontrol(void)
     }
 
     // calls the functions created earlier when their respective buttons are pressed
+    /*
     if(Controller1.ButtonUp.pressing()){
       buttonForward();
     }
     if(Controller1.ButtonLeft.pressing()){
       buttonBackward();
-    }
+    }*/
 
     // runs the flywheel at the target speed when R2 is pressed
     if(Controller1.ButtonR2.pressing()){
@@ -605,10 +596,6 @@ void usercontrol(void)
     }
     // calls the loading function
     Controller1.ButtonR1.pressed(pewpew);
-
-    // calls the endgame launch function
-    Controller1.ButtonX.pressed(launch1);
-    Controller1.ButtonA.pressed(launch2);
     
     // controls the intake using the left bumpers
     if(Controller1.ButtonL1.pressing()){
@@ -622,6 +609,11 @@ void usercontrol(void)
 
     // calls the toggle ke function
     Controller1.ButtonRight.pressed(toggleBrake);
+
+    if(Controller1.ButtonX.pressing() && Controller1.ButtonUp.pressing()){
+      launcher1.set(true);
+      launcher2.set(true);
+    }
 
     // spins all of the motors
     L1.spin(forward);

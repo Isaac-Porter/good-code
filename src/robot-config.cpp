@@ -20,7 +20,7 @@ motor Intake = motor(PORT1, ratio36_1, true);
 encoder lateralEnc = encoder(Brain.ThreeWirePort.C);
 encoder straightEnc = encoder(Brain.ThreeWirePort.E);
 digital_out loader = digital_out(Brain.ThreeWirePort.H);
-digital_out launcher1 = digital_out(Brain.ThreeWirePort.G);
+digital_out launcher1 = digital_out(Brain.ThreeWirePort.B);
 digital_out launcher2 = digital_out(Brain.ThreeWirePort.A);
 
 // VEXcode generated functions
