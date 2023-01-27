@@ -270,7 +270,7 @@ void left_side(){
   ew();
   wait(300,msec);
 
-  ttarget=-140;
+  ttarget=-155;
   Shooter.spin(forward,87,pct);
   wait(400,msec);
   pewpew_auto(2,87);
@@ -281,16 +281,16 @@ void left_side(){
   wait(200,msec);
 
   target=2700;
-  pidLim=1200;
+  pidLim=8000;
   Intake.spin(forward,100,pct);
   wait(400,msec);
-  pidLim=3000;
+  pidLim=2500;
   pw();
 
   pidLim=12000;
   resetPID();
 
-  ttarget=606;
+  ttarget=593;
   Shooter.spin(forward,85,pct);
   pewpew_auto(3,85);
 }
