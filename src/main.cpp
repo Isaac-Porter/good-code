@@ -42,6 +42,8 @@ competition Competition;
 
 task drawFieldTask(drawField);
 task odoTask(positionTracking);
+//task graphthePID(graph);
+
 
 int auton=0;
 double T=20;
@@ -51,6 +53,7 @@ double maxA=10;
 
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
+  
   vexcodeInit();
   Shooter.setStopping(coast);
   Intake.setStopping(coast);
@@ -100,7 +103,7 @@ void pre_auton(void) {
 }
 
 
-double kp=10,ki=0.01,kd=10;
+double kp=8,ki=0.1,kd=5;
 double integral=0,derivative=0;
 double error=0,prevError=0,target=0,output=0,input=0;
 
@@ -136,9 +139,10 @@ int pid(){
     
     output=kp*error+ki*integral+kd*derivative;
 
+    
+    tinput=(L1.position(degrees)+L2.position(degrees)+L3.position(degrees)-R1.position(degrees)-R2.position(degrees)-R3.position(degrees))/6;
+    terror=ttarget-tinput;
     if(turning){
-      tinput=(L1.position(degrees)+L2.position(degrees)+L3.position(degrees)-R1.position(degrees)-R2.position(degrees)-R3.position(degrees))/6;
-      terror=ttarget-tinput;
       if(tprevError==0 && terror!=0){
         tprevError=error;
       }
@@ -153,7 +157,7 @@ int pid(){
 
     Controller1.Screen.setCursor(3, 1);
     Controller1.Screen.clearLine(3);
-    Controller1.Screen.print("%f",Shooter.velocity(pct));
+    Controller1.Screen.print("%f",Intake.velocity(pct));
 
     if(output>pidLim){
       output=pidLim;
@@ -242,11 +246,24 @@ void etw(){
     wait(3,msec);
   }
 }
+void intakeThingyWait(){
+  Intake.spin(forward,100,pct);
+  wait(200,msec);
+  while((derivative>0.5 || derivative<-0.5)/* && (error>200 || error <-200)*/){
+    if(Intake.velocity(pct)<10){
+      Intake.spin(reverse, 100, pct);
+      wait(200,msec);
+      Intake.spin(forward,100,pct);
+      wait(200,msec);
+    }
+    wait(3,msec);
+  }
+}
 
-void pewpew_auto(int d, int p){  // function that controls the loading of discs into the shooter
+
+void pewpew_auto(int d, double p){  // function that controls the loading of discs into the shooter
   //Shooter.spin(forward,100,pct);
   int t=0;
-  //wait(200,msec);
   for(int i=0; i<d; i++){
     t=0;
     while(Shooter.velocity(pct)<p || t<20){
@@ -261,38 +278,38 @@ void pewpew_auto(int d, int p){  // function that controls the loading of discs 
 }
 
 void left_side(){
-  target=270;
-  Intake.spin(forward,-100,pct);
-  wait(500,msec);
+  turning=false;
+  target=320;
+  Intake.spin(forward,100,pct);
+  wait(1000,msec);
   Intake.stop();
 
-  target=-170;
+  target=-500;
   ew();
   wait(300,msec);
-
-  ttarget=-155;
-  Shooter.spin(forward,87,pct);
+  turning=true;
+  /*
+  ttarget=-200;
+  Shooter.spin(forward,100,pct);
+  pewpew_auto(2,100);
   wait(400,msec);
-  pewpew_auto(2,87);
-  wait(400,msec);
+  */
 
   ttarget=-870;
   etw();
   wait(200,msec);
 
-  target=2700;
-  pidLim=8000;
-  Intake.spin(forward,100,pct);
-  wait(400,msec);
-  pidLim=2500;
-  pw();
+  target=1900;
+  pidLim=3000;
+  wait(2000,msec);
+  intakeThingyWait();
 
   pidLim=12000;
   resetPID();
 
-  ttarget=593;
-  Shooter.spin(forward,85,pct);
-  pewpew_auto(3,85);
+  ttarget=606;
+  Shooter.spin(forward,90,pct);
+  pewpew_auto(3,90);
 }
 
 void win_point(){
@@ -349,15 +366,18 @@ void win_point(){
   
 }
 
-double g_target=0;
-//double g_input=0;
-task pid_task(pid);
-//task graphthePID(tgraph);
+void testy(){
+  turning=false;
+  target=1000;
+  wait(4000,msec);
+}
+
+double g_target=1000;
 //task move(chassis_control);
+task pid_task(pid);
 
 void autonomous(void) {
-  pid_task.stop();
-  task pid_task(pid);
+  //pid_task.resume();
   L1.setStopping(coast);
   L2.setStopping(coast);
   L3.setStopping(coast);
@@ -383,7 +403,7 @@ void autonomous(void) {
 
 
 double modifier = 1;
-double fwSpeed = 75;
+double fwSpeed = 60;
 int fwGear = 1;
 int reversed = 1;
 bool reversed_bool=false;
@@ -428,26 +448,18 @@ void buttonRight()
 
 void pewpew(){  // function that controls the loading of discs into the shooter
   int t=0;   // only runs when the flywheel is at a certain speed
-  while(Shooter.velocity(pct)<fwSpeed-1){
+  while(Controller1.ButtonR1.pressing()){
+    while(Shooter.velocity(pct)<fwSpeed){
       wait(10,msec);//waits until the flywheel is back up to target speed
       t++;
-      if(t>100){
+      if(!Controller1.ButtonR1.pressing()){
         break;
       }
     }
-  while(Controller1.ButtonR1.pressing() && Shooter.velocity(pct)>fwSpeed-1){
     loader.set(true); 
     wait(200,msec);  // actuates the piston to launch the disc
     loader.set(false);
-    while(Shooter.velocity(pct)<fwSpeed-1){
-      wait(10,msec);//waits until the flywheel is back up to target speed
-      t++;
-      if(t>50){
-        break;
-      }
-    }
   }
-  loader.set(false);
 }
 
 void change(){ //function that reverses a boolean that controls the direction of the robot
@@ -476,19 +488,12 @@ void toggleBrake(){ //function that toggles the motors between braking and coast
 
 void setFwSpeed(){ //cycles between 3 target speeds for the flywheel
   fwGear++;
-  if (fwGear > 3) fwGear = 1;
-
-  switch (fwGear) {
-    case 1:
-      fwSpeed = 75;
-      break;
-    case 2:
-      fwSpeed = 80;
-      break;
-    case 3:
-      fwSpeed = 85;
-      break;
+  if (fwGear > 256){
+    fwGear = 1;
   }
+  
+  fwSpeed = 60 + 5 * int(fwGear/31);
+
 }
 
 int printSpeed(){ //prints information about the flywheel to the controller screen
@@ -501,7 +506,7 @@ int printSpeed(){ //prints information about the flywheel to the controller scre
       Controller1.Screen.setCursor(2,1);
       Controller1.Screen.print(" %.2f actual",Shooter.velocity(pct));
     } 
-    if(pt!=fwSpeed){
+    if(true){
       pt=fwSpeed;
       Controller1.Screen.clearLine(1);
       Controller1.Screen.setCursor(1,1);

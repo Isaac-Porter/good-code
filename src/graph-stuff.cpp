@@ -2,7 +2,7 @@
 double g_input=0;
 int y,t,py;
 int graph(){
-    t=0;
+    //t=0;
     g_input=0;
     py=0;
     Brain.Screen.clearScreen();
