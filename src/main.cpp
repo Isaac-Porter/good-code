@@ -117,6 +117,7 @@ bool atAngle=false;
 bool turning=true;
 
 double pidLim=12000;
+bool pid_enable=true;
 
 int pid(){
   //Controller1.Screen.clearScreen();
@@ -128,6 +129,7 @@ int pid(){
   R3.setPosition(0,degrees);
   
   while(true){
+    if(pid_enable){
     input=(L1.position(degrees)+L2.position(degrees)+L3.position(degrees)+R1.position(degrees)+R2.position(degrees)+R3.position(degrees))/6;
     error=target-input;
     if(prevError==0 && error!=0){
@@ -191,6 +193,7 @@ int pid(){
     }
 
     g_target=ttarget;
+    }
   }
   return 1;
 }
@@ -254,10 +257,19 @@ void intakeThingyWait(){
       Intake.spin(reverse, 100, pct);
       wait(200,msec);
       Intake.spin(forward,100,pct);
-      wait(200,msec);
+      wait(500,msec);
     }
     wait(3,msec);
   }
+}
+int intakeThingy(){
+  while(true){
+    Intake.spin(forward,100,pct);
+    wait(1500,msec);
+    Intake.spin(reverse,100,pct);
+    wait(250,msec);
+  }
+  return 1;
 }
 
 
@@ -278,12 +290,14 @@ void pewpew_auto(int d, double p){  // function that controls the loading of dis
 }
 
 void left_side(){
-  turning=false;
-  target=320;
-  Intake.spin(forward,100,pct);
-  wait(1000,msec);
+  turning=true;
+  target=100;
+  ttarget=-250;
+  Intake.spin(forward,-100,pct);
+  wait(600,msec);
   Intake.stop();
 
+  //ttarget=0;
   target=-500;
   ew();
   wait(300,msec);
@@ -299,17 +313,27 @@ void left_side(){
   etw();
   wait(200,msec);
 
-  target=1900;
-  pidLim=3000;
-  wait(2000,msec);
-  intakeThingyWait();
+  target=900;
+  pidLim=4000;
+  Intake.spin(forward,100,pct);
+  ew();
+  wait(1000,msec);
+  target=1300;
+  ew();
+  wait(1000,msec);
+  target=1600;
+  ew();
+  //intakeThingyWait();
 
   pidLim=12000;
   resetPID();
 
-  ttarget=606;
+  //task intakeTast(intakeThingy);
+
+  ttarget=670;//606
   Shooter.spin(forward,90,pct);
   pewpew_auto(3,90);
+  //intakeTast.stop();
 }
 
 void win_point(){
@@ -366,10 +390,12 @@ void win_point(){
   
 }
 
-void testy(){
-  turning=false;
-  target=1000;
-  wait(4000,msec);
+void poop(){
+  Shooter.spin(forward,40,pct);
+  pewpew_auto(1,40);
+  Shooter.spin(forward,40,pct);
+  wait(1000,msec);
+  pewpew_auto(1,40);
 }
 
 double g_target=1000;
@@ -386,7 +412,7 @@ void autonomous(void) {
   R3.setStopping(coast);
   resetPID();
 
-  left_side();
+  poop();
 
   pid_task.stop();
   
@@ -453,7 +479,7 @@ void pewpew(){  // function that controls the loading of discs into the shooter
       wait(10,msec);//waits until the flywheel is back up to target speed
       t++;
       if(!Controller1.ButtonR1.pressing()){
-        break;
+        return;
       }
     }
     loader.set(true); 
