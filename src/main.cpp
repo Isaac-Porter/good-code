@@ -42,7 +42,8 @@ competition Competition;
 
 task drawFieldTask(drawField);
 task odoTask(positionTracking);
-//task graphthePID(graph);
+//task graphTask(fgraph);
+double g_target=420;
 
 
 int auton=0;
@@ -332,8 +333,31 @@ void left_side(){
 
   ttarget=670;//606
   Shooter.spin(forward,90,pct);
-  pewpew_auto(3,90);
+  pewpew_auto(1,90);
+  wait(500,msec);
+  pewpew_auto(1,90);
+  wait(500,msec);
+  pewpew_auto(1,90);
   //intakeTast.stop();
+}
+
+void right_side(){
+  target=-500;
+  pw();
+  resetPID();
+  Intake.spin(forward,-100,pct);
+  target=-200;
+  ttarget=300;
+  wait(1000,msec);
+  Intake.stop();
+  target=200;
+  pw();
+  resetPID();
+  ttarget=-300;
+  tw();
+  target=-1200;
+  ew();
+  poop();
 }
 
 void win_point(){
@@ -398,7 +422,6 @@ void poop(){
   pewpew_auto(1,40);
 }
 
-double g_target=1000;
 //task move(chassis_control);
 task pid_task(pid);
 
@@ -412,7 +435,7 @@ void autonomous(void) {
   R3.setStopping(coast);
   resetPID();
 
-  poop();
+  left_side();
 
   pid_task.stop();
   
@@ -427,9 +450,55 @@ void autonomous(void) {
   */
 }
 
+double fwSpeed = 70;
+double fwenable=false;
+
+double fwpi=0, fwpp=0;
+
+double fkp=1000,fki=0,fkd=500;
+double fintegral=0,fderivative=0;
+double ferror1=0,fprevError=0,ftarget=0,foutput=0,finput=0;
+
+int flywheel_pid(){
+  while(true){
+    if(fwenable){
+    fwpi=Shooter.position(rotationUnits::rev)*100;
+    finput=fwpi-fwpp;
+    g_input=finput;
+    fwpp=fwpi;
+    if(Controller1.ButtonR2.pressing()){
+      g_target=fwSpeed;
+      ftarget=fwSpeed;
+
+      ferror1=ftarget-finput;
+      if(fprevError==0 && ferror1!=0){
+        fprevError=ferror1;
+      }
+      fintegral+=ferror1;
+      fderivative=ferror1-fprevError;
+      fprevError=ferror1;
+      
+      foutput=fkp*ferror1+fki*fintegral+fkd*fderivative;
+
+      
+      Controller1.Screen.clearLine(3);
+      Controller1.Screen.setCursor(3, 1);
+      Controller1.Screen.print("%f",foutput);
+      
+
+      Shooter.spin(forward,foutput/1000,volt);
+    }else{
+      Shooter.stop();
+    }
+    wait(10,msec);
+  }
+  }
+  return 1;
+}
+
+//task fwTask(flywheel_pid);
 
 double modifier = 1;
-double fwSpeed = 60;
 int fwGear = 1;
 int reversed = 1;
 bool reversed_bool=false;
@@ -514,19 +583,23 @@ void toggleBrake(){ //function that toggles the motors between braking and coast
 
 void setFwSpeed(){ //cycles between 3 target speeds for the flywheel
   fwGear++;
-  if (fwGear > 256){
-    fwGear = 1;
+  switch(fwGear){
+    case 1: fwSpeed=70;
+            break;
+    case 2: fwSpeed=75;
+            break;
+    default:
+            fwSpeed=65;
+            fwGear=0;
   }
-  
-  fwSpeed = 60 + 5 * int(fwGear/31);
-
+  g_target=fwSpeed;
 }
 
 int printSpeed(){ //prints information about the flywheel to the controller screen
   double ps=0;
   double pt=0;
   while(true){
-    if(abs(Shooter.velocity(pct))-1>abs(ps) || abs(Shooter.velocity(pct))+1<abs(ps)){
+    if(std::abs(Shooter.velocity(pct))-1>std::abs(ps) || std::abs(Shooter.velocity(pct))+1<std::abs(ps)){
       ps=Shooter.velocity(pct);
       Controller1.Screen.clearLine(2);
       Controller1.Screen.setCursor(2,1);
@@ -546,20 +619,22 @@ int printSpeed(){ //prints information about the flywheel to the controller scre
 
 void usercontrol(void)
 {
-  task printBrain(printSpeed);
   pid_task.stop();
   //move.stop();
+  Controller1.ButtonY.pressed(setFwSpeed);
+  // calls the loading function
+  Controller1.ButtonR1.pressed(pewpew);
+  task printController(printSpeed);
   modifier = 1;
   while (1)
   {
-     
     // creates 2 variables, giving them the controller's vertical axes' values
     double leftPower = Controller1.Axis3.position(percent);
-    if(abs(leftPower)<=10){
+    if(std::abs(leftPower)<=10){
       leftPower=0;
     }
     double rightPower = Controller1.Axis2.position(percent);
-    if(abs(rightPower)<=10){
+    if(std::abs(rightPower)<=10){
       rightPower=0;
     }
 
@@ -592,7 +667,7 @@ void usercontrol(void)
       reversed=-1;
     }
     // call setFwSpeed to cycle through the different speeds
-    Controller1.ButtonY.pressed(setFwSpeed);
+    
 
     if(reversed==1){
       L1.setVelocity((leftPower) * modifier, percent);
@@ -620,13 +695,13 @@ void usercontrol(void)
     }*/
 
     // runs the flywheel at the target speed when R2 is pressed
+    if(!fwenable){
     if(Controller1.ButtonR2.pressing()){
       Shooter.setVelocity(fwSpeed,pct);
     }else{
       Shooter.setVelocity(0,pct);
     }
-    // calls the loading function
-    Controller1.ButtonR1.pressed(pewpew);
+    }
     
     // controls the intake using the left bumpers
     if(Controller1.ButtonL1.pressing()){
@@ -639,7 +714,10 @@ void usercontrol(void)
     
 
     // calls the toggle ke function
-    Controller1.ButtonRight.pressed(toggleBrake);
+    //Controller1.ButtonRight.pressed(toggleBrake);
+    if(Controller1.ButtonRight.pressing() && !fwenable){
+      Shooter.setVelocity(-100,pct);
+    }
 
     if(Controller1.ButtonX.pressing() && Controller1.ButtonUp.pressing()){
       launcher1.set(true);
@@ -654,7 +732,9 @@ void usercontrol(void)
     R2.spin(forward);
     R3.spin(forward);
     Intake.spin(forward);
-    Shooter.spin(forward);
+    if(!fwenable){
+      Shooter.spin(forward);
+    }
     wait(20, msec); // Sleep the task for a short amount of time to
                     // prevent wasted resources.
   }
