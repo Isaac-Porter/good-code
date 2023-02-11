@@ -12,5 +12,12 @@ extern double error;
 extern double tderivative;
 extern double terror;
 
+extern bool fwenable;
+extern double fwpi, fwpp;
+extern double fkp,fki,fkd;
+extern double fintegral,fderivative;
+extern double ferror1,fprevError,ftarget,foutput,finput;
+
 int pid();
+int flywheel_pid();
 void resetPID();
