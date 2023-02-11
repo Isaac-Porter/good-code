@@ -12,7 +12,6 @@ extern motor R2;
 extern motor R3;
 extern motor Shooter;
 extern motor Intake;
-extern motor test;
 extern digital_out loader;
 extern digital_out launcher1;
 extern digital_out launcher2;
