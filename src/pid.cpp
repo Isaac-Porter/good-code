@@ -26,72 +26,79 @@ int pid(){
   R3.setPosition(0,degrees);
   target=0;
   ttarget=0;
+
+  timer timey;
+  double timeMoment=0;
   
   while(true){
+    timeMoment=timey.time(timeUnits::msec);
+
     if(pid_enable){
-    input=(L1.position(degrees)+L2.position(degrees)+L3.position(degrees)+R1.position(degrees)+R2.position(degrees)+R3.position(degrees))/6;
-    error=target-input;
-    if(prevError==0 && error!=0){
-      prevError=error;
-    }
-    integral+=error;
-    derivative=error-prevError;
-    prevError=error;
-    
-    output=kp*error+ki*integral+kd*derivative;
-
-    
-    tinput=(L1.position(degrees)+L2.position(degrees)+L3.position(degrees)-R1.position(degrees)-R2.position(degrees)-R3.position(degrees))/6;
-    terror=ttarget-tinput;
-    if(turning){
-      if(tprevError==0 && terror!=0){
-        tprevError=error;
+      input=(L1.position(degrees)+L2.position(degrees)+L3.position(degrees)+R1.position(degrees)+R2.position(degrees)+R3.position(degrees))/6;
+      error=target-input;
+      if(prevError==0 && error!=0){
+        prevError=error;
       }
-      tintegral+=terror;
-      tderivative=terror-tprevError;
-      tprevError=terror;
+      integral+=error;
+      derivative=error-prevError;
+      prevError=error;
       
-      toutput=kpt*terror+kit*tintegral+kdt*tderivative;
-    }else{
-      toutput=0;
+      output=kp*error+ki*integral+kd*derivative;
+
+      
+      tinput=(L1.position(degrees)+L2.position(degrees)+L3.position(degrees)-R1.position(degrees)-R2.position(degrees)-R3.position(degrees))/6;
+      terror=ttarget-tinput;
+      if(turning){
+        if(tprevError==0 && terror!=0){
+          tprevError=error;
+        }
+        tintegral+=terror;
+        tderivative=terror-tprevError;
+        tprevError=terror;
+        
+        toutput=kpt*terror+kit*tintegral+kdt*tderivative;
+      }else{
+        toutput=0;
+      }
+
+      Controller1.Screen.setCursor(3, 1);
+      Controller1.Screen.clearLine(3);
+      Controller1.Screen.print("%f",(output-toutput)/1000);
+      printf("%f\n",(output-toutput)/1000);
+
+      if(output>pidLim){
+        output=pidLim;
+      }else if(output<-pidLim){
+        output=-pidLim;
+      }
+      if(toutput>pidLim){
+        output=pidLim;
+      }else if(toutput<-pidLim){
+        output=-pidLim;
+      }
+      
+      R1.spin(forward,(output-toutput)/1000,volt);
+      R2.spin(forward,(output-toutput)/1000,volt);
+      R3.spin(forward,(output-toutput)/1000,volt);
+      L1.spin(forward,(output+toutput)/1000,volt);
+      L2.spin(forward,(output+toutput)/1000,volt);
+      L3.spin(forward,(output+toutput)/1000,volt);
+
+      if(derivative<0.5 && derivative>-0.5 && error<100 && error>-100){
+        atTarget=true;
+      }else{
+        atTarget=false;
+      }
+      if(tderivative<0.5 && tderivative>-0.5 && terror<50 && terror >-50){
+        atAngle=true;
+      }else{
+        atAngle=false;
+      }
+    }
+    while(timey.time(timeUnits::msec)<timeMoment+10){
+      vex::task::sleep(1);
     }
 
-    Controller1.Screen.setCursor(3, 1);
-    Controller1.Screen.clearLine(3);
-    Controller1.Screen.print("%f",(output-toutput)/1000);
-    printf("%f\n",(output-toutput)/1000);
-
-    if(output>pidLim){
-      output=pidLim;
-    }else if(output<-pidLim){
-      output=-pidLim;
-    }
-    if(toutput>pidLim){
-      output=pidLim;
-    }else if(toutput<-pidLim){
-      output=-pidLim;
-    }
-    
-    R1.spin(forward,(output-toutput)/1000,volt);
-    R2.spin(forward,(output-toutput)/1000,volt);
-    R3.spin(forward,(output-toutput)/1000,volt);
-    L1.spin(forward,(output+toutput)/1000,volt);
-    L2.spin(forward,(output+toutput)/1000,volt);
-    L3.spin(forward,(output+toutput)/1000,volt);
-
-    wait((int)10,msec);
-
-    if(derivative<0.5 && derivative>-0.5 && error<100 && error>-100){
-      atTarget=true;
-    }else{
-      atTarget=false;
-    }
-    if(tderivative<0.5 && tderivative>-0.5 && terror<50 && terror >-50){
-      atAngle=true;
-    }else{
-      atAngle=false;
-    }
-    }
   }
   return 1;
 }
@@ -110,4 +117,59 @@ void resetPID(){
   tintegral=0;
   target=0;
   ttarget=0;
+}
+
+
+bool fwenable=true;
+bool shooting=false;
+double fwpi=0, fwpp=0;
+
+double fkp=100,fki=1,fkd=1;
+double fintegral=0,fderivative=0;
+double ferror1=0,fprevError=0,ftarget=0,foutput=0,finput=0;
+
+int flywheel_pid(){
+  Shooter.setPosition(0,rev);
+  timer timey;
+  double timeMoment=0;
+  while(fwenable){
+    timeMoment=timey.time(timeUnits::msec);
+    //fwpi=Shooter.position(rotationUnits::rev)*240;
+    //finput=fwpi-fwpp;
+    finput=Shooter.velocity(pct);
+    //g_input=finput;
+    //fwpp=fwpi;
+    if(shooting){
+      //g_target=fwSpeed;
+      //ftarget=fwSpeed;
+
+      ferror1=ftarget-finput;
+      if(fprevError==0 && ferror1!=0){
+        fprevError=ferror1;
+      }
+      fintegral+=ferror1;
+      /*
+      if( fintegral < -12000){
+        fintegral=-12000;
+      }else if(fintegral > 12000){
+        fintegral=12000;
+      }*/
+      
+      fderivative=ferror1-fprevError;
+      fprevError=ferror1;
+      
+      foutput=fkp*ferror1+fki*fintegral+fkd*fderivative;
+
+      Shooter.spin(forward,foutput/1000,volt);
+    }else{
+      Shooter.stop();
+    }
+      //Controller1.Screen.clearLine(3);
+      //Controller1.Screen.setCursor(3, 1);
+      //Controller1.Screen.print("%f",timeMoment);
+    while(timey.time(timeUnits::msec)<timeMoment+10){
+      vex::task::sleep(1);
+    }
+  }
+  return 1;
 }

@@ -41,10 +41,11 @@ using namespace vex;
 
 competition Competition;
 
-task drawFieldTask(drawField);
+//task drawFieldTask(drawField);
 task odoTask(positionTracking);
-//task graphTask(fgraph);
+task graphTask(fgraph);
 task pid_task(pid);
+task fwTask(flywheel_pid);
 double g_target=420;
 
 int auton=0;
@@ -60,6 +61,7 @@ void pre_auton(void) {
   Shooter.setStopping(coast);
   Intake.setStopping(coast);
   pid_task.suspend();
+  fwTask.suspend();
   
   
   /*
@@ -178,6 +180,20 @@ void pewpew_auto(int d, double p){  // function that controls the loading of dis
   }
   //Shooter.stop();
 }
+void pewpew2(int d, double p){
+  int t=0;
+  for(int i=0; i<d; i++){
+    t=0;
+    while(std::abs(ferror1)<5 || t<20){
+      wait(10,msec);//waits until the flywheel is back up to target speed
+      t++;
+    }
+    loader.set(true); 
+    wait(200,msec);  // actuates the piston to launch the disc
+    loader.set(false);
+  }
+}
+
 
 void left_side(){
   turning=true;
@@ -379,6 +395,7 @@ void poop(){
 
 void autonomous(void) {
   pid_task.resume();
+  fwTask.resume();
   L1.setStopping(coast);
   L2.setStopping(coast);
   L3.setStopping(coast);
@@ -390,6 +407,7 @@ void autonomous(void) {
   right_side();
 
   pid_task.stop();
+  fwenable=false;
   
 
   /*
@@ -402,53 +420,7 @@ void autonomous(void) {
   */
 }
 
-double fwSpeed = 36;
-double fwenable=false;
-
-double fwpi=0, fwpp=0;
-
-double fkp=1000,fki=0,fkd=500;
-double fintegral=0,fderivative=0;
-double ferror1=0,fprevError=0,ftarget=0,foutput=0,finput=0;
-
-int flywheel_pid(){
-  while(true){
-    if(fwenable){
-    fwpi=Shooter.position(rotationUnits::rev)*100;
-    finput=fwpi-fwpp;
-    g_input=finput;
-    fwpp=fwpi;
-    if(Controller1.ButtonR2.pressing()){
-      g_target=fwSpeed;
-      ftarget=fwSpeed;
-
-      ferror1=ftarget-finput;
-      if(fprevError==0 && ferror1!=0){
-        fprevError=ferror1;
-      }
-      fintegral+=ferror1;
-      fderivative=ferror1-fprevError;
-      fprevError=ferror1;
-      
-      foutput=fkp*ferror1+fki*fintegral+fkd*fderivative;
-
-      
-      Controller1.Screen.clearLine(3);
-      Controller1.Screen.setCursor(3, 1);
-      Controller1.Screen.print("%f",foutput);
-      
-
-      Shooter.spin(forward,foutput/1000,volt);
-    }else{
-      Shooter.stop();
-    }
-    wait(10,msec);
-  }
-  }
-  return 1;
-}
-
-//task fwTask(flywheel_pid);
+double fwSpeed = 70;
 
 double modifier = 1;
 int fwGear = 1;
@@ -572,6 +544,7 @@ int printSpeed(){ //prints information about the flywheel to the controller scre
 void usercontrol(void)
 {
   pid_task.stop();
+  fwenable=false;
   //move.stop();
   Controller1.ButtonY.pressed(setFwSpeed);
   // calls the loading function
