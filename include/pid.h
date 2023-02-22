@@ -12,7 +12,7 @@ extern double error;
 extern double tderivative;
 extern double terror;
 
-extern bool fwenable;
+extern bool fwenable, shooting;
 extern double fwpi, fwpp;
 extern double fkp,fki,fkd;
 extern double fintegral,fderivative;

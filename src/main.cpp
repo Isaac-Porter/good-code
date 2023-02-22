@@ -41,9 +41,9 @@ using namespace vex;
 
 competition Competition;
 
-//task drawFieldTask(drawField);
+task drawFieldTask(drawField);
 task odoTask(positionTracking);
-task graphTask(fgraph);
+//task graphTask(fgraph);
 task pid_task(pid);
 task fwTask(flywheel_pid);
 double g_target=420;
@@ -180,11 +180,11 @@ void pewpew_auto(int d, double p){  // function that controls the loading of dis
   }
   //Shooter.stop();
 }
-void pewpew2(int d, double p){
+void pewpew2(int d){
   int t=0;
   for(int i=0; i<d; i++){
     t=0;
-    while(std::abs(ferror1)<5 || t<20){
+    while(std::abs(ferror1)>1 || t<20){
       wait(10,msec);//waits until the flywheel is back up to target speed
       t++;
     }
@@ -303,26 +303,42 @@ void right_side(){
 }
 
 void win_point(){
-  target=170;
+  turning=true;
+  shooting=false;
+  target=100;
+  ttarget=-250;
   Intake.spin(forward,-100,pct);
-  Shooter.spin(forward,87.5,pct);
-  wait(650,msec);
+  wait(600,msec);
   Intake.stop();
 
   target=-170;
+  ttarget=0;
   ew();
+  etw();
   wait(300,msec);
-
-  ttarget=-140;
-  wait(300,msec);
-  pewpew_auto(2,87.5);
-  wait(400,msec);
 
   ttarget=-910;
   etw();
 
   Intake.spin(forward,100,pct);
-  target=7000;
+  target=2700;
+  wait(500,msec);
+  shooting=true;
+  ftarget=90;
+  pidLim=7000;
+  ew();
+  pidLim=12000;
+  ttarget=-300;
+  wait(300,msec);
+  etw();
+  pewpew2(3);
+  shooting=false;
+  ttarget=-910;
+  wait(300,msec);
+  etw();
+
+  wait(300,msec);
+  target=6000;
   wait(300,msec);
   ew();
 
@@ -339,7 +355,8 @@ void win_point(){
   resetPID();
   target=800;
   Intake.spin(forward,-100,pct);
-  Shooter.spin(forward,87.5,pct);
+  ftarget=90;
+  shooting=true;
   ew();
   resetPID();
   wait(600,msec);
@@ -351,8 +368,8 @@ void win_point(){
 
   ttarget=-130;
   wait(400,msec);
-  pewpew_auto(3,87.5);
-  wait(400,msec);
+  pewpew2(3);
+  shooting=false;
   
 }
 
@@ -404,7 +421,7 @@ void autonomous(void) {
   R3.setStopping(coast);
   resetPID();
   
-  right_side();
+  win_point();
 
   pid_task.stop();
   fwenable=false;
