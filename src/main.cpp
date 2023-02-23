@@ -184,7 +184,7 @@ void pewpew2(int d){
   int t=0;
   for(int i=0; i<d; i++){
     t=0;
-    while(std::abs(ferror1)>1 || t<20){
+    while(std::abs(ferror1)>1 || t<30){
       wait(10,msec);//waits until the flywheel is back up to target speed
       t++;
     }
@@ -193,7 +193,6 @@ void pewpew2(int d){
     loader.set(false);
   }
 }
-
 
 void left_side(){
   turning=true;
@@ -303,71 +302,96 @@ void right_side(){
 }
 
 void win_point(){
+  // move forward, turn slightly, and spin roller
+  // target=100;
   turning=true;
   shooting=false;
-  target=100;
   ttarget=-250;
   Intake.spin(forward,-100,pct);
-  wait(600,msec);
+  wait(500,msec);
   Intake.stop();
 
-  target=-170;
+  // turn back slighlty and back away from roller
+  target=-235;
   ttarget=0;
-  ew();
-  etw();
-  wait(300,msec);
-
-  ttarget=-910;
-  etw();
-
-  Intake.spin(forward,100,pct);
-  target=2700;
   wait(500,msec);
+
+  // turn to face 3-stack of discs
+  ttarget=-885;
+  etw();
+
+  // move forward and start intaking
+  Intake.spin(forward,100,pct);
+  target=2400;
+  wait(500,msec);
+
+  // start revving flywheel
   shooting=true;
-  ftarget=90;
-  pidLim=7000;
-  ew();
+  ftarget=85;
+
+  // continue moving forward to intake 3-stack of discs and align with high goal
+  pidLim=6000;
+  intakeThingyWait();
   pidLim=12000;
-  ttarget=-300;
+
+  // turn to shoot at high goal
+  ttarget=-280;
   wait(300,msec);
   etw();
+
+  // shoot 3 dics
   pewpew2(3);
   shooting=false;
-  ttarget=-910;
+
+  // turn to face line of 3 discs
+  ttarget=-925;
   wait(300,msec);
   etw();
 
+  // move forward and intake line of 3 discs
   wait(300,msec);
-  target=6000;
+  target=6750;
   wait(300,msec);
-  ew();
+  intakeThingyWait();
 
-  resetPID();
-  ttarget=-250;
-  etw();
+  // turn slightly to adjust for roller
+  // resetPID();
+  // ttarget=-250;
+  // etw();
 
-  target=900;
-  pw();
+  // drive forward
+  // target=900;
+  // pw();
 
-  ttarget=200;
+  // turn towards roller
+  ttarget=250;
   tw();
 
+  // move forwards and start intake (for roller mech)
   resetPID();
-  target=800;
+  target=-725;
   Intake.spin(forward,-100,pct);
+
+  // start revving flywheel
   ftarget=90;
   shooting=true;
+
+  // spin roller
   ew();
   resetPID();
   wait(600,msec);
   Intake.stop();
 
-  target=-250;
+  // back away from roller
+  target=200;
   ew();
   wait(300,msec);
 
-  ttarget=-130;
+  // turn to shoot at high goal
+  ttarget=-775;
   wait(400,msec);
+
+  // shoot 3 discs
   pewpew2(3);
   shooting=false;
   
@@ -485,7 +509,8 @@ void buttonRight()
 void pewpew(){  // function that controls the loading of discs into the shooter
   int t=0;   // only runs when the flywheel is at a certain speed
   while(Controller1.ButtonR1.pressing()){
-    while(Shooter.velocity(pct)<fwSpeed){
+    t=0;
+    while(Shooter.velocity(pct)<fwSpeed || t<30){
       wait(10,msec);//waits until the flywheel is back up to target speed
       t++;
       if(!Controller1.ButtonR1.pressing()){

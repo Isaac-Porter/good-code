@@ -64,7 +64,7 @@ int pid(){
       Controller1.Screen.setCursor(3, 1);
       Controller1.Screen.clearLine(3);
       Controller1.Screen.print("%f",(output-toutput)/1000);
-      printf("%f\n",(output-toutput)/1000);
+      //printf("%f\n",(output-toutput)/1000);
 
       if(output>pidLim){
         output=pidLim;
