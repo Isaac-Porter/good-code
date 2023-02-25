@@ -13,6 +13,7 @@ extern motor R3;
 extern motor Shooter;
 extern motor Intake;
 extern digital_out loader;
+extern digital_out blocker;
 extern digital_out launcher1;
 extern digital_out launcher2;
 extern encoder lateralEnc;

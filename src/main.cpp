@@ -154,6 +154,19 @@ void intakeThingyWait(){
     wait(3,msec);
   }
 }
+void intakeThingyWait2(){
+  Intake.spin(forward,100,pct);
+  wait(200,msec);
+  while((derivative>1 || derivative<-1)/* && (error>200 || error <-200)*/){
+    if(Intake.velocity(pct)<10){
+      Intake.spin(reverse, 100, pct);
+      wait(200,msec);
+      Intake.spin(forward,100,pct);
+      wait(500,msec);
+    }
+    wait(3,msec);
+  }
+}
 int intakeThingy(){
   while(true){
     Intake.spin(forward,100,pct);
@@ -193,6 +206,14 @@ void pewpew2(int d){
     loader.set(false);
   }
 }
+/*
+void stopFW(){
+  for(int i=12; i>-1; i-=0.5){
+    Shooter.spin(forward,i,volt);
+    wait(20,msec);
+  }
+  Shooter.stop();
+}*/
 
 void left_side(){
   turning=true;
@@ -322,12 +343,12 @@ void win_point(){
 
   // move forward and start intaking
   Intake.spin(forward,100,pct);
-  target=2400;
+  target=2100;
   wait(500,msec);
 
   // start revving flywheel
   shooting=true;
-  ftarget=85;
+  ftarget=87;
 
   // continue moving forward to intake 3-stack of discs and align with high goal
   pidLim=6000;
@@ -335,7 +356,7 @@ void win_point(){
   pidLim=12000;
 
   // turn to shoot at high goal
-  ttarget=-280;
+  ttarget=-290;
   wait(300,msec);
   etw();
 
@@ -349,10 +370,10 @@ void win_point(){
   etw();
 
   // move forward and intake line of 3 discs
+  //wait(300,msec);
+  target=6650;
   wait(300,msec);
-  target=6750;
-  wait(300,msec);
-  intakeThingyWait();
+  intakeThingyWait2();
 
   // turn slightly to adjust for roller
   // resetPID();
@@ -364,16 +385,16 @@ void win_point(){
   // pw();
 
   // turn towards roller
-  ttarget=250;
-  tw();
+  ttarget=-525;
+  etw();
 
   // move forwards and start intake (for roller mech)
   resetPID();
-  target=-725;
+  target=700;
   Intake.spin(forward,-100,pct);
 
   // start revving flywheel
-  ftarget=90;
+  ftarget=100;
   shooting=true;
 
   // spin roller
@@ -382,14 +403,9 @@ void win_point(){
   wait(600,msec);
   Intake.stop();
 
-  // back away from roller
-  target=200;
-  ew();
-  wait(300,msec);
-
   // turn to shoot at high goal
-  ttarget=-775;
-  wait(400,msec);
+  //ttarget=100;
+  //wait(400,msec);
 
   // shoot 3 discs
   pewpew2(3);
@@ -462,7 +478,7 @@ void autonomous(void) {
 }
 
 double fwSpeed = 70;
-
+bool revving=false;
 double modifier = 1;
 int fwGear = 1;
 int reversed = 1;
@@ -507,20 +523,22 @@ void buttonRight()
 }
 
 void pewpew(){  // function that controls the loading of discs into the shooter
-  int t=0;   // only runs when the flywheel is at a certain speed
+  int t=0;
   while(Controller1.ButtonR1.pressing()){
     t=0;
-    while(Shooter.velocity(pct)<fwSpeed || t<30){
+    while(Shooter.velocity(pct)<fwSpeed-0.5 || t<40){
       wait(10,msec);//waits until the flywheel is back up to target speed
       t++;
       if(!Controller1.ButtonR1.pressing()){
-        return;
+        break;
       }
     }
+    //blocker.set(false);
     loader.set(true); 
     wait(200,msec);  // actuates the piston to launch the disc
     loader.set(false);
   }
+  //blocker.set(true);
 }
 
 void change(){ //function that reverses a boolean that controls the direction of the robot
@@ -592,6 +610,7 @@ void usercontrol(void)
   // calls the loading function
   Controller1.ButtonR1.pressed(pewpew);
   task printController(printSpeed);
+  blocker.set(true);
   modifier = 1;
   while (1)
   {
@@ -662,12 +681,13 @@ void usercontrol(void)
     }*/
 
     // runs the flywheel at the target speed when R2 is pressed
-    if(!fwenable){
     if(Controller1.ButtonR2.pressing()){
       Shooter.setVelocity(fwSpeed,pct);
+      revving=true;
     }else{
+      revving=false;
       Shooter.setVelocity(0,pct);
-    }
+      //blocker.set(true);
     }
     
     // controls the intake using the left bumpers
@@ -699,9 +719,7 @@ void usercontrol(void)
     R2.spin(forward);
     R3.spin(forward);
     Intake.spin(forward);
-    if(!fwenable){
-      Shooter.spin(forward);
-    }
+    Shooter.spin(forward);
     wait(20, msec); // Sleep the task for a short amount of time to
                     // prevent wasted resources.
   }

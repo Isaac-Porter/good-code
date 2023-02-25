@@ -118,7 +118,19 @@ void resetPID(){
   target=0;
   ttarget=0;
 }
+bool stopping=false;
 
+void stopFW(){
+  double power=12;
+  while(power>-2){
+    Shooter.spin(forward,power,volt);
+    power-=0.5;
+    wait(20,msec);
+    printf("stopping");
+  }
+  Shooter.stop();
+  stopping=false;
+}
 
 bool fwenable=true;
 bool shooting=false;
@@ -161,6 +173,11 @@ int flywheel_pid(){
       foutput=fkp*ferror1+fki*fintegral+fkd*fderivative;
 
       Shooter.spin(forward,foutput/1000,volt);
+
+      stopping=true;
+    }else if(stopping){
+      //stopFW();
+      stopping=false;
     }else{
       Shooter.stop();
     }
