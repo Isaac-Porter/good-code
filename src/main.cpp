@@ -56,7 +56,7 @@ double maxA=10;
 
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
-
+  blocker.set(true);
   vexcodeInit();
   Shooter.setStopping(coast);
   Intake.setStopping(coast);
@@ -195,6 +195,7 @@ void pewpew_auto(int d, double p){  // function that controls the loading of dis
 }
 void pewpew2(int d){
   int t=0;
+  blocker.set(false);
   for(int i=0; i<d; i++){
     t=0;
     while(std::abs(ferror1)>1 || t<30){
@@ -205,6 +206,7 @@ void pewpew2(int d){
     wait(200,msec);  // actuates the piston to launch the disc
     loader.set(false);
   }
+  blocker.set(true);
 }
 /*
 void stopFW(){
@@ -348,7 +350,7 @@ void win_point(){
 
   // start revving flywheel
   shooting=true;
-  ftarget=87;
+  ftarget=89;
 
   // continue moving forward to intake 3-stack of discs and align with high goal
   pidLim=6000;
@@ -356,7 +358,7 @@ void win_point(){
   pidLim=12000;
 
   // turn to shoot at high goal
-  ttarget=-290;
+  ttarget=-285;
   wait(300,msec);
   etw();
 
@@ -390,7 +392,7 @@ void win_point(){
 
   // move forwards and start intake (for roller mech)
   resetPID();
-  target=700;
+  target=800;
   Intake.spin(forward,-100,pct);
 
   // start revving flywheel
@@ -404,7 +406,7 @@ void win_point(){
   Intake.stop();
 
   // turn to shoot at high goal
-  //ttarget=100;
+  ttarget=100;
   //wait(400,msec);
 
   // shoot 3 discs
@@ -524,13 +526,16 @@ void buttonRight()
 
 void pewpew(){  // function that controls the loading of discs into the shooter
   int t=0;
+  if(blocker.value() && Controller1.ButtonR2.pressing()){
+    blocker.set(false);
+  }
   while(Controller1.ButtonR1.pressing()){
     t=0;
     while(Shooter.velocity(pct)<fwSpeed-0.5 || t<40){
       wait(10,msec);//waits until the flywheel is back up to target speed
       t++;
       if(!Controller1.ButtonR1.pressing()){
-        break;
+        return;
       }
     }
     //blocker.set(false);
@@ -684,10 +689,13 @@ void usercontrol(void)
     if(Controller1.ButtonR2.pressing()){
       Shooter.setVelocity(fwSpeed,pct);
       revving=true;
+      //blocker.set(false);
     }else{
       revving=false;
       Shooter.setVelocity(0,pct);
-      //blocker.set(true);
+      if(!blocker.value()){
+        blocker.set(true);
+      }
     }
     
     // controls the intake using the left bumpers
