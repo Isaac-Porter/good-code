@@ -147,7 +147,7 @@ void intakeThingyWait(){
   while((derivative>0.5 || derivative<-0.5)/* && (error>200 || error <-200)*/){
     if(Intake.velocity(pct)<10){
       Intake.spin(reverse, 100, pct);
-      wait(200,msec);
+      wait(400,msec);
       Intake.spin(forward,100,pct);
       wait(500,msec);
     }
@@ -156,11 +156,11 @@ void intakeThingyWait(){
 }
 void intakeThingyWait2(){
   Intake.spin(forward,100,pct);
-  wait(200,msec);
-  while((derivative>1 || derivative<-1)/* && (error>200 || error <-200)*/){
+  wait(500,msec);
+  while((derivative>5 || derivative<-5)/* && (error>200 || error <-200)*/){
     if(Intake.velocity(pct)<10){
       Intake.spin(reverse, 100, pct);
-      wait(200,msec);
+      wait(400,msec);
       Intake.spin(forward,100,pct);
       wait(500,msec);
     }
@@ -195,16 +195,26 @@ void pewpew_auto(int d, double p){  // function that controls the loading of dis
 }
 void pewpew2(int d){
   int t=0;
+  bool retry=false;
   blocker.set(false);
   for(int i=0; i<d; i++){
-    t=0;
+    // if(!retry){
+    //   t=0;
+    // }
     while(std::abs(ferror1)>1 || t<30){
       wait(10,msec);//waits until the flywheel is back up to target speed
       t++;
     }
-    loader.set(true); 
-    wait(200,msec);  // actuates the piston to launch the disc
-    loader.set(false);
+    // wait(50,msec);
+    //if(std::abs(ferror1)<1){
+      loader.set(true); 
+      wait(200,msec);  // actuates the piston to launch the disc
+      loader.set(false);
+      retry=false;
+    // //}else{
+    //   retry=true;
+    //   i--;
+    // }
   }
   blocker.set(true);
 }
@@ -327,15 +337,17 @@ void right_side(){
 void win_point(){
   // move forward, turn slightly, and spin roller
   // target=100;
+  shooting=true;
+  ftarget=89;
+
   turning=true;
-  shooting=false;
   ttarget=-250;
   Intake.spin(forward,-100,pct);
   wait(500,msec);
   Intake.stop();
 
   // turn back slighlty and back away from roller
-  target=-235;
+  target=-240;
   ttarget=0;
   wait(500,msec);
 
@@ -346,19 +358,19 @@ void win_point(){
   // move forward and start intaking
   Intake.spin(forward,100,pct);
   target=2100;
-  wait(500,msec);
+  wait(700,msec);
 
   // start revving flywheel
-  shooting=true;
-  ftarget=89;
 
   // continue moving forward to intake 3-stack of discs and align with high goal
+  pidLim=3000;
+  wait(300,msec);
   pidLim=6000;
   intakeThingyWait();
   pidLim=12000;
 
   // turn to shoot at high goal
-  ttarget=-285;
+  ttarget=-885+625;
   wait(300,msec);
   etw();
 
@@ -373,9 +385,14 @@ void win_point(){
 
   // move forward and intake line of 3 discs
   //wait(300,msec);
-  target=6650;
+  target=6350;
   wait(300,msec);
   intakeThingyWait2();
+
+  Intake.stop();
+  pidLim=7000;
+  target=6350+500;
+  ew();
 
   // turn slightly to adjust for roller
   // resetPID();
@@ -387,31 +404,33 @@ void win_point(){
   // pw();
 
   // turn towards roller
+  
   ttarget=-525;
   etw();
 
   // move forwards and start intake (for roller mech)
   resetPID();
-  target=800;
+  target=1000;
   Intake.spin(forward,-100,pct);
 
   // start revving flywheel
-  ftarget=100;
-  shooting=true;
+  //ftarget=100;
+  //shooting=true;
 
   // spin roller
   ew();
   resetPID();
   wait(600,msec);
   Intake.stop();
+  
 
   // turn to shoot at high goal
-  ttarget=100;
+  //ttarget=100;
   //wait(400,msec);
 
   // shoot 3 discs
-  pewpew2(3);
-  shooting=false;
+  //pewpew2(3);
+  //shooting=false;
   
 }
 
