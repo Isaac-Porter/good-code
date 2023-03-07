@@ -335,11 +335,10 @@ void right_side(){
 }
 
 void win_point(){
-  // move forward, turn slightly, and spin roller
-  // target=100;
+  //start spinning the flywheel
   shooting=true;
   ftarget=89;
-
+  // move forward, turn slightly, and spin roller
   turning=true;
   ttarget=-250;
   Intake.spin(forward,-100,pct);
@@ -359,8 +358,6 @@ void win_point(){
   Intake.spin(forward,100,pct);
   target=2100;
   wait(700,msec);
-
-  // start revving flywheel
 
   // continue moving forward to intake 3-stack of discs and align with high goal
   pidLim=3000;
@@ -384,27 +381,17 @@ void win_point(){
   etw();
 
   // move forward and intake line of 3 discs
-  //wait(300,msec);
   target=6350;
   wait(300,msec);
   intakeThingyWait2();
-
   Intake.stop();
+
+  //slow down as we approach the roller
   pidLim=7000;
   target=6350+500;
   ew();
 
-  // turn slightly to adjust for roller
-  // resetPID();
-  // ttarget=-250;
-  // etw();
-
-  // drive forward
-  // target=900;
-  // pw();
-
   // turn towards roller
-  
   ttarget=-525;
   etw();
 
@@ -413,25 +400,11 @@ void win_point(){
   target=1000;
   Intake.spin(forward,-100,pct);
 
-  // start revving flywheel
-  //ftarget=100;
-  //shooting=true;
-
   // spin roller
   ew();
   resetPID();
   wait(600,msec);
   Intake.stop();
-  
-
-  // turn to shoot at high goal
-  //ttarget=100;
-  //wait(400,msec);
-
-  // shoot 3 discs
-  //pewpew2(3);
-  //shooting=false;
-  
 }
 
 void skill(){
