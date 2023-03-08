@@ -136,11 +136,21 @@ bool fwenable=true;
 bool shooting=false;
 double fwpi=0, fwpp=0;
 
-double fkp=100,fki=1,fkd=1;
+double fkp=500,fki=1.05,fkd=10;
 double fintegral=0,fderivative=0;
 double ferror1=0,fprevError=0,ftarget=0,foutput=0,finput=0;
+double pout=0;
+double output_revised=0;
+bool rev_initial=true;
+bool just_started=false;
+
+double pin, rev_input;
+
+int intialTime=2000;
+int timeElapsed=0;
 
 int flywheel_pid(){
+
   Shooter.setPosition(0,rev);
   timer timey;
   double timeMoment=0;
@@ -148,14 +158,47 @@ int flywheel_pid(){
     timeMoment=timey.time(timeUnits::msec);
     //fwpi=Shooter.position(rotationUnits::rev)*240;
     //finput=fwpi-fwpp;
+    pin=finput;
+    if(std::abs(finput-pin)>0.25){
+      rev_input=pin+0.25*((finput-pin)/std::abs(finput-pin));
+    }else{
+      rev_input=finput;
+    }
     finput=Shooter.velocity(pct);
     //g_input=finput;
     //fwpp=fwpi;
-    if(shooting){
+    if(shooting && rev_initial){
+
+      Shooter.spin(fwd, 12, volt);
+      ferror1=ftarget-rev_input;
+      if(fprevError==0 && ferror1!=0){
+        fprevError=ferror1;
+      }
+      fintegral+=ferror1;
+      
+      fderivative=ferror1-fprevError;
+      fprevError=ferror1;
+
+      if(timeElapsed>intialTime){
+        fintegral=9300;
+        rev_initial=false;
+      }else{
+        wait(100,msec);
+        timeElapsed+=100;
+      }
+
+    }
+    if(!shooting){
+      Shooter.stop();
+      rev_initial=true;
+      timeElapsed=0;
+    }
+    if(shooting && !rev_initial){
       //g_target=fwSpeed;
       //ftarget=fwSpeed;
 
-      ferror1=ftarget-finput;
+      ferror1=ftarget-rev_input;
+
       if(fprevError==0 && ferror1!=0){
         fprevError=ferror1;
       }
@@ -170,21 +213,23 @@ int flywheel_pid(){
       fderivative=ferror1-fprevError;
       fprevError=ferror1;
       
+      pout=foutput;
       foutput=fkp*ferror1+fki*fintegral+fkd*fderivative;
+      
+      
+      // if(std::abs(foutput-pout)>5){
+      //   output_revised=pout+5*((foutput-pout)/std::abs(foutput-pout));
+      // }else{
+      //   output_revised=foutput;
+      // }
+      output_revised=foutput;
 
-      Shooter.spin(forward,foutput/1000,volt);
-
-      stopping=true;
-    }else if(stopping){
-      //stopFW();
-      stopping=false;
-    }else{
-      Shooter.stop();
+      Shooter.spin(forward,output_revised/1000,volt);
     }
       //Controller1.Screen.clearLine(3);
       //Controller1.Screen.setCursor(3, 1);
       //Controller1.Screen.print("%f",timeMoment);
-    while(timey.time(timeUnits::msec)<timeMoment+10){
+    while(timey.time(timeUnits::msec)<timeMoment+100){
       vex::task::sleep(1);
     }
   }

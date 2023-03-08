@@ -67,7 +67,7 @@ int fgraph(){
     t=0;
     g_input=0;
     double g_input2=0;
-    double g_target2=70;
+    double g_target2=90;
     double p=0;
     double pp=0;
     double y2=0;
@@ -91,19 +91,26 @@ int fgraph(){
     
     timer timey;
     double timeMoment=0;
+    double pin,rev_input;
     while(true){
+        pin=g_input2;
+        if(std::abs(g_input2-pin)>0.125){
+        rev_input=pin+0.125*((g_input2-pin)/std::abs(g_input2-pin));
+        }else{
+        rev_input=g_input2;
+        }
+        g_input2=Shooter.velocity(pct);
         timeMoment=timey.time();
         //Brain.Screen.printAt(20,-220, "%.3f",g_input);
         //Brain.Screen.printAt(270,-220, "%.3f",g_input2);
         scale=168.0/g_target;
         p=Shooter.position(rev)*1200;
         //g_input=p-pp;
-        g_input2=Shooter.velocity(pct);
         pp=p;
         y=-(scale*g_input);
         //Brain.Screen.drawLine(t,y,t-1,py);
         py=y;
-        y2=-(scale2*g_input2);
+        y2=-(scale2*rev_input);
         Brain.Screen.drawLine(t,y2,t-1,py2);
         py2=y2;
         t+=1;
