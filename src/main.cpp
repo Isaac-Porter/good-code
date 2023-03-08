@@ -197,29 +197,29 @@ void pewpew2(int d){
 
 void left_side(){
   turning=true;
+  shooting=true;
+  ftarget=90;
   target=100;
   ttarget=-250;
   Intake.spin(forward,-100,pct);
   wait(600,msec);
   Intake.stop();
-  
-  /*
+
   //ttarget=0;
   target=-500;
   ew();
   wait(300,msec);
-  turning=true;
   
-  //ttarget=-200;
-  //Shooter.spin(forward,100,pct);
-  //pewpew_auto(2,100);
-  //wait(400,msec);
-  
+  ttarget=-200;
+  pewpew2(2);
+  shooting=false;
 
   ttarget=-870;
   etw();
   wait(200,msec);
 
+  shooting=true;
+  ftarget=89;
   target=900;
   pidLim=4000;
   Intake.spin(forward,100,pct);
@@ -238,18 +238,12 @@ void left_side(){
   //task intakeTast(intakeThingy);
 
   ttarget=670;//606
-  Shooter.spin(forward,90,pct);
-  pewpew_auto(1,90);
   wait(500,msec);
-  pewpew_auto(1,90);
-  wait(500,msec);
-  pewpew_auto(1,90);
-  //intakeTast.stop();
-  */
+  pewpew2(3);
+  shooting=false;
 }
 
 void right_side(){
-  /* complicated path
   turning=true;
   target=1950;
   Intake.spin(forward,100,pct);
@@ -269,7 +263,7 @@ void right_side(){
   wait(500,msec);
   pewpew_auto(1,v);
   Shooter.stop();
-  */
+  
   
 
 
