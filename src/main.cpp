@@ -41,9 +41,9 @@ using namespace vex;
 
 competition Competition;
 
-task drawFieldTask(drawField);
+//task drawFieldTask(drawField);
 task odoTask(positionTracking);
-//task graphTask(fgraph);
+task graphTask(fgraph);
 task pid_task(pid);
 task fwTask(flywheel_pid);
 double g_target=420;
@@ -218,6 +218,31 @@ void pewpew2(int d){
   }
   blocker.set(true);
 }
+void pewpew3(int d){
+  int t=0;
+  bool retry=false;
+  blocker.set(false);
+  for(int i=0; i<d; i++){
+    if(!retry){
+      t=0;
+    }
+    while(std::abs(ferror1)>1 || t<30){
+      wait(10,msec);//waits until the flywheel is back up to target speed
+      t++;
+    }
+    wait(50,msec);
+    if(std::abs(ferror1)<1){
+      loader.set(true); 
+      wait(200,msec);  // actuates the piston to launch the disc
+      loader.set(false);
+      retry=false;
+    }else{
+      retry=true;
+      i--;
+    }
+  }
+  blocker.set(true);
+}
 /*
 void stopFW(){
   for(int i=12; i>-1; i-=0.5){
@@ -228,39 +253,34 @@ void stopFW(){
 }*/
 
 void left_side(){
+  //start spinning the flywheel
+  shooting=true;
+  ftarget=95;
+  // move forward, turn slightly, and spin roller
   turning=true;
-  target=100;
   ttarget=-250;
   Intake.spin(forward,-100,pct);
-  wait(600,msec);
+  wait(500,msec);
   Intake.stop();
-  
-  /*
-  //ttarget=0;
-  target=-500;
-  ew();
-  wait(300,msec);
-  turning=true;
-  
-  //ttarget=-200;
-  //Shooter.spin(forward,100,pct);
-  //pewpew_auto(2,100);
-  //wait(400,msec);
-  
 
-  ttarget=-870;
+  // turn back slighlty and back away from roller
+  target=-240;
+  ttarget=-170;
+  wait(500,msec);
+  
+  pewpew3(2);
+  shooting=false;
+
+  ttarget=-900;
   etw();
   wait(200,msec);
 
-  target=900;
-  pidLim=4000;
+  shooting=true;
+  ftarget=89;
+  target=1700;
+  pidLim=5000;
   Intake.spin(forward,100,pct);
-  ew();
   wait(1000,msec);
-  target=1300;
-  ew();
-  wait(1000,msec);
-  target=1600;
   ew();
   //intakeThingyWait();
 
@@ -269,39 +289,22 @@ void left_side(){
 
   //task intakeTast(intakeThingy);
 
-  ttarget=670;//606
-  Shooter.spin(forward,90,pct);
-  pewpew_auto(1,90);
-  wait(500,msec);
-  pewpew_auto(1,90);
-  wait(500,msec);
-  pewpew_auto(1,90);
-  //intakeTast.stop();
-  */
+  ttarget=655;//606
+  wait(800,msec);
+  pewpew3(3);
+  shooting=false;
 }
 
 void right_side(){
-  /* complicated path
+  shooting=true;
+  ftarget=90;
   turning=true;
   target=1950;
   Intake.spin(forward,100,pct);
   wait(500,msec);
   ew();
-  turning=true;
-  ttarget=-1025;
-  tw();
-  Intake.spin(reverse,100,pct);
-  wait(200,msec);
-  Intake.stop();
-  int v=93;
-  Shooter.spin(forward,v,pct);
-  pewpew_auto(1,v);
-  wait(500,msec);
-  pewpew_auto(1,v);
-  wait(500,msec);
-  pewpew_auto(1,v);
-  Shooter.stop();
-  */
+
+  
   
 
 
@@ -336,8 +339,6 @@ void right_side(){
 
 void win_point(){
   //start spinning the flywheel
-  shooting=true;
-  ftarget=89;
   // move forward, turn slightly, and spin roller
   turning=true;
   ttarget=-250;
@@ -350,6 +351,8 @@ void win_point(){
   ttarget=0;
   wait(500,msec);
 
+  shooting=true;
+  ftarget=90;
   // turn to face 3-stack of discs
   ttarget=-885;
   etw();
@@ -456,6 +459,10 @@ void autonomous(void) {
   resetPID();
   
   win_point();
+
+  // shooting=true;
+  // ftarget=90;
+  // wait(10,sec);
 
   pid_task.stop();
   fwenable=false;
