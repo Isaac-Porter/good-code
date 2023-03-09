@@ -256,6 +256,7 @@ void left_side(){
   //start spinning the flywheel
   shooting=true;
   ftarget=95;
+
   // move forward, turn slightly, and spin roller
   turning=true;
   ttarget=-250;
@@ -268,29 +269,33 @@ void left_side(){
   ttarget=-170;
   wait(500,msec);
   
+  //shoot preloads into the goal
   pewpew3(2);
   shooting=false;
 
+  //turn towards the stack of 3 discs
   ttarget=-900;
   etw();
   wait(200,msec);
 
+  //start spinning the flywheel again for the next shots
   shooting=true;
   ftarget=89;
+  
+  //moves forward slowly and intakes the discs
   target=1700;
   pidLim=5000;
   Intake.spin(forward,100,pct);
   wait(1000,msec);
   ew();
-  //intakeThingyWait();
-
   pidLim=12000;
   resetPID();
 
-  //task intakeTast(intakeThingy);
-
-  ttarget=655;//606
+  //turns towards the high goal
+  ttarget=655;
   wait(800,msec);
+  
+  //shoots the 3 discs into the high goal
   pewpew3(3);
   shooting=false;
 }
