@@ -1,6 +1,10 @@
 #include "graph-stuff.h"
+double g_target;
 double g_input=0;
 int y,t,py;
+
+bool shot=false;
+
 int graph(){
     //t=0;
     g_input=0;
@@ -63,11 +67,11 @@ int tgraph(){
     return 1;
 }
 
+double g_target2=90;
 int fgraph(){
     t=0;
-    g_input=0;
+    g_target=12;
     double g_input2=0;
-    double g_target2=90;
     double p=0;
     double pp=0;
     double y2=0;
@@ -93,23 +97,40 @@ int fgraph(){
     double timeMoment=0;
     double pin,rev_input;
     while(true){
-        pin=g_input2;
-        if(std::abs(g_input2-pin)>0.125){
-        rev_input=pin+0.125*((g_input2-pin)/std::abs(g_input2-pin));
-        }else{
-        rev_input=g_input2;
+        if(shot){
+            shot=false;
+            Brain.Screen.setPenColor(blue);
+            Brain.Screen.drawLine(t,-240,t,-170);
+            Brain.Screen.setPenColor(white);
         }
+        pin=g_input2;
+        // if(std::abs(g_input2-pin)>0.125){
+        //     rev_input=pin+0.125*((g_input2-pin)/std::abs(g_input2-pin));
+        //     pin=rev_input;
+        // }else{
+            rev_input=g_input2;
+        // }
+        
+        // if(Shooter.velocity(pct)>g_target2-3){
+        //     g_input=Shooter.velocity(pct)/9+(g_target2-Shooter.velocity(pct))/2;
+        // }else{
+        //     g_input=12;
+        // }
+        g_input=Shooter.voltage(volt);
         g_input2=Shooter.velocity(pct);
         timeMoment=timey.time();
-        //Brain.Screen.printAt(20,-220, "%.3f",g_input);
-        //Brain.Screen.printAt(270,-220, "%.3f",g_input2);
+        Brain.Screen.printAt(20,-220, "%.3f",g_input);
+        Brain.Screen.printAt(270,-220, "%.3f",g_input2);
         scale=168.0/g_target;
         p=Shooter.position(rev)*1200;
         //g_input=p-pp;
         pp=p;
         y=-(scale*g_input);
-        //Brain.Screen.drawLine(t,y,t-1,py);
+        Brain.Screen.setPenColor(yellow);
+        Brain.Screen.drawLine(t,y,t-1,py);
+        Brain.Screen.setPenColor(white);
         py=y;
+        scale2=168.0/g_target2;
         y2=-(scale2*rev_input);
         Brain.Screen.drawLine(t,y2,t-1,py2);
         py2=y2;

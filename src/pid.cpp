@@ -159,11 +159,12 @@ int flywheel_pid(){
     //fwpi=Shooter.position(rotationUnits::rev)*240;
     //finput=fwpi-fwpp;
     pin=finput;
-    if(std::abs(finput-pin)>0.25){
-      rev_input=pin+0.25*((finput-pin)/std::abs(finput-pin));
-    }else{
+    // if(std::abs(finput-pin)>0.25){
+    //   rev_input=pin+0.25*((finput-pin)/std::abs(finput-pin));
+    //   pin=rev_input;
+    // }else{
       rev_input=finput;
-    }
+    // }
     finput=Shooter.velocity(pct);
     //g_input=finput;
     //fwpp=fwpi;
@@ -178,17 +179,21 @@ int flywheel_pid(){
       
       fderivative=ferror1-fprevError;
       fprevError=ferror1;
+      //Shooter.spin(fwd,11,volt);
+      //Shooter.spin(fwd,90,pct);
 
-      if(timeElapsed>intialTime){
+      if(rev_input>ftarget-3){
+        // Shooter.spin(fwd,rev_input/8+(ftarget-rev_input)/1.5,volt);
         fintegral=9300;
         rev_initial=false;
       }else{
         wait(100,msec);
         timeElapsed+=100;
+        // Shooter.spin(fwd,12,volt);
       }
 
     }
-    if(!shooting){
+    if(!shooting && !rev_initial){
       Shooter.stop();
       rev_initial=true;
       timeElapsed=0;
