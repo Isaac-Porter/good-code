@@ -269,6 +269,33 @@ void pewpew3(int d){
   }
   blocker.set(true);
 }
+void pewpew4(int d){
+  int t=0;
+  bool retry=false;
+  blocker.set(false);
+  for(int i=0; i<d; i++){
+    // if(!retry){
+      t=0;
+    // }
+    
+    while((std::abs(ferror1)>1 || t<40) && t<8000 ){
+      wait(10,msec);//waits until the flywheel is back up to target speed
+      t++;
+    }
+    // wait(50,msec);
+    //if(std::abs(ferror1)<1){
+    loader.set(true); 
+    wait(200,msec);  // actuates the piston to launch the disc
+    loader.set(false);
+    retry=false;
+    shot=true;
+    // //}else{
+    //   retry=true;
+    //   i--;
+    // }
+  }
+  blocker.set(true);
+}
 
 // 90 pct -> 11 volt
 
@@ -307,13 +334,14 @@ void left_side(){
   target=1700;
   pidLim=5000;
   task intakeTask(intakeThingy);
+
   // Intake.spin(forward,100,pct);
   wait(1000,msec);
   ew();
   pidLim=12000;
 
   //turns towards the high goal
-  ttarget=-900+672;
+  ttarget=-900+715;
   wait(800,msec);
 
   //shoots the 3 discs into the high goal
@@ -466,24 +494,103 @@ void win_point(){
 }
 
 void skill(){
+  //start spinning the flywheel
+  // move forward, turn slightly, and spin roller
   turning=true;
-  target=80;
   ttarget=-250;
   Intake.spin(forward,-100,pct);
+  wait(800,msec);
+  Intake.stop();
+
+  // turn back slighlty and back away from roller
+  target=-240;
+  ttarget=0;
+  wait(500,msec);
+
+  shooting=true;
+  ftarget=89;
+  // turn to face 3-stack of discs
+  ttarget=-875;
+  etw();
+
+  // move forward and start intaking
+  Intake.spin(forward,100,pct);
+  task intakeTask(intakeThingy);
+  target=2300;
+  wait(700,msec);
+  //Shooter.spin(fwd,11.2,volt);
+
+  // continue moving forward to intake 3-stack of discs and align with high goal
+  //pidLim=3000;
+  wait(300,msec);
+  pidLim=6000;
+  ew();
+  //intakeThingyWait();
+  pidLim=12000;
+
+  // turn to shoot at high goal
+  ttarget=-875+615;
+  wait(300,msec);
+  etw();
+
+  // shoot 3 dics
+  //pewpew_auto(3,89);
+  //Shooter.stop();
+  pewpew4(3);
+  shooting=false;
+
+  // turn to face line of 3 discs
+  ttarget=-925;
+  wait(300,msec);
+  etw();
+
+  // move forward and intake line of 3 discs
+  target=6450;
+  // wait(300,msec);
+  // wait(1300,msec);
+  newWait();
+  //intakeThingyWait2();
+  //Intake.stop();
+  wait(500,msec);
+
+  //slow down as we approach the roller
+  intakeTask.stop();
+  Intake.stop();
+
+  pid_task.suspend();
+
+  R1.stop();
+  R2.stop();
+  R3.stop();
+  L1.spin(fwd,100,pct);
+  L2.spin(fwd,100,pct);
+  L3.spin(fwd,100,pct);
+  // R1.spin(fwd,30,pct);
+  // R2.spin(fwd,30,pct);
+  // R3.spin(fwd,30,pct);
+  Intake.spin(forward,-100,pct);
+  wait(600,msec);
+  L1.stop();
+  L2.stop();
+  L3.stop();
   wait(600,msec);
   Intake.stop();
-  wait(500,msec);
-  resetPID();
-  target=-1100;
-  pw();
-  ttarget=-870;
-  tw();
-  launcher1.set(true);
-  launcher2.set(true);
-  wait(1000,msec);
+  
+  pid_task.resume();
   resetPID();
   target=-1200;
-  pw();
+  ew();
+  ttarget=-440;
+  etw();
+  launcher1.set(true);
+  launcher2.set(true);
+  wait(500,msec);
+  resetPID();
+  pidLim=6000;
+  target=500;
+  wait(2000,msec);
+  resetPID();
+
 }
 
 void test(){
