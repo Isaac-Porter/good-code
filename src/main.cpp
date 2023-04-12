@@ -41,9 +41,9 @@ using namespace vex;
 
 competition Competition;
 
-//task drawFieldTask(drawField);
+task drawFieldTask(drawField);
 task odoTask(positionTracking);
-task graphTask(fgraph);
+//task graphTask(fgraph);
 task pid_task(pid);
 task fwTask(flywheel_pid);
 
@@ -56,12 +56,13 @@ double maxA=10;
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
   blocker.set(true);
+  resetPID();
   vexcodeInit();
   Shooter.setStopping(coast);
   Intake.setStopping(coast);
   pid_task.suspend();
   fwTask.suspend();
-  
+  dinglebopper.set(false);
   
   /*
   lcdButton b1(50,50,100,50,"WP","#123456");
@@ -195,6 +196,12 @@ int intakeThingy(){
     wait(3,msec);
   }
   return 1;
+}int intakeThingy2(){
+  wait(500,msec);
+  Intake.spin(fwd,-100,pct);
+  wait(300,msec);
+  Intake.spin(fwd,100,pct);
+  return 1;
 }
 
 
@@ -248,24 +255,24 @@ void pewpew3(int d){
   bool retry=false;
   blocker.set(false);
   for(int i=0; i<d; i++){
-    // if(!retry){
+    if(!retry){
       t=0;
-    // }
-    while(Shooter.velocity(pct)<100 || t<40){
+    }
+    while((Shooter.velocity(pct)<100 || t<100) && t<500){
       wait(10,msec);//waits until the flywheel is back up to target speed
       t++;
     }
-    // wait(50,msec);
-    // if(std::abs(ferror1)<1){
+    wait(50,msec);
+    if(Shooter.velocity(pct)>100){
       loader.set(true); 
       wait(200,msec);  // actuates the piston to launch the disc
       loader.set(false);
       retry=false;
       shot=true;
-    // }else{
-    //   retry=true;
-    //   i--;
-    // }
+    }else{
+      retry=true;
+      i--;
+    }
   }
   blocker.set(true);
 }
@@ -297,99 +304,93 @@ void pewpew4(int d){
   blocker.set(true);
 }
 
-// 90 pct -> 11 volt
+
 
 void left_side(){
   //start spinning the flywheel
   //Shooter.spin(forward,100,pct);
   Shooter.spin(fwd,13,volt);
-
-  // move forward, turn slightly, and spin roller
-  turning=true;
-  ttarget=-250;
-  Intake.spin(forward,-100,pct);
-  wait(600,msec);
-  Intake.stop();
-
-  // turn back slighlty and back away from roller
-  target=-240;
-  ttarget=-120;
-  wait(500,msec);
-  
-  //shoot preloads into the goal
   pewpew3(2);
-  shooting=false;
-  // Shooter.spin(fwd,92,pct);
+
+  target=400;
+  Intake.spin(forward,-100,pct);
+  wait(800,msec);
+  Intake.stop();
+  target=0;
+  ew();
+
+  // // move forward, turn slightly, and spin roller
+  // turning=true;
+  // ttarget=-250;
+  // Intake.spin(forward,-100,pct);
+  // wait(600,msec);
+  // Intake.stop();
+
+  // // turn back slighlty and back away from roller
+  // target=-240;
+  // ttarget=-120;
+  // wait(500,msec);
 
   //turn towards the stack of 3 discs
-  ttarget=-900;
+  ttarget=-835;
   etw();
   wait(200,msec);
 
   //start spinning the flywheel again for the next shots
   shooting=true;
-  ftarget=91;
+  ftarget=87;
   
   //moves forward slowly and intakes the discs
-  target=1700;
-  pidLim=5000;
-  task intakeTask(intakeThingy);
+  target=1750+250;
+  pidLim=9000;
 
   // Intake.spin(forward,100,pct);
-  wait(1000,msec);
+  wait(500,msec);
+  pidLim=5000;
+  wait(300,msec);
+  task intakeTask(intakeThingy);
+  pidLim=5000;
   ew();
   pidLim=12000;
 
   //turns towards the high goal
-  ttarget=-900+715;
+  ttarget=-850+715-27-2;
   wait(800,msec);
 
   //shoots the 3 discs into the high goal
-  pewpew2(3);
   intakeTask.stop();
+  task intakeTask2(intakeThingy2);
+  pewpew2(3);
+  intakeTask2.stop();
+  // Intake.spin(fwd,-100,pct);
+  // wait(300,msec);
+  Intake.spin(fwd,100,pct);
+  wait(700,msec);
+  pewpew2(1);
   shooting=false;
 }
 
 void right_side(){
   shooting=true;
-  ftarget=90;
+  ftarget=84;
   turning=true;
-  target=1950;
-  Intake.spin(forward,100,pct);
+  printf("wfsskfhskdjfh");
+  target=100;
+  wait(300,msec);
+  ew();
+  target=1750;
+  //task intakeTask(intakeThingy);
   wait(500,msec);
   ew();
-
-  
-  
-
-
-  //simple path
-  Shooter.spin(forward,60,pct);
-  pewpew_auto(1,50);
-  wait(1000,msec);
-  pewpew_auto(1,50);
-  Shooter.stop();
-  target=1000;
+  ttarget=-800;
   wait(500,msec);
-  ew();
-  resetPID();
-  ttarget=750;
   etw();
-  target=450;
-  Intake.spin(forward,-100,pct);
-  wait(1000,msec);
-  Intake.stop();
-  wait(1000,msec);
-  target=200;
-  pw();
-  /*
-  resetPID();
-  ttarget=800;
-  tw();
-  Intake.spin(forward,100,pct);
-  target=1200;
-  ew();
-  */
+  pewpew2(3);
+  shooting=false;
+  ttarget=-400;
+  wait(500,msec);
+  etw();
+
 }
 
 void win_point(){
@@ -407,9 +408,9 @@ void win_point(){
   wait(500,msec);
 
   shooting=true;
-  ftarget=89;
+  ftarget=88;
   // turn to face 3-stack of discs
-  ttarget=-875;
+  ttarget=-855;
   etw();
 
   // move forward and start intaking
@@ -428,7 +429,7 @@ void win_point(){
   pidLim=12000;
 
   // turn to shoot at high goal
-  ttarget=-875+615;
+  ttarget=-875+625;
   wait(300,msec);
   etw();
 
@@ -439,7 +440,7 @@ void win_point(){
   shooting=false;
 
   // turn to face line of 3 discs
-  ttarget=-925;
+  ttarget=-925+30;
   wait(300,msec);
   etw();
 
@@ -450,7 +451,7 @@ void win_point(){
   newWait();
   //intakeThingyWait2();
   //Intake.stop();
-  wait(500,msec);
+  wait(800,msec);
 
   //slow down as we approach the roller
   intakeTask.stop();
@@ -467,8 +468,9 @@ void win_point(){
   // R1.spin(fwd,30,pct);
   // R2.spin(fwd,30,pct);
   // R3.spin(fwd,30,pct);
+  wait(300,msec);
   Intake.spin(forward,-100,pct);
-  wait(600,msec);
+  wait(300,msec);
   L1.stop();
   L2.stop();
   L3.stop();
@@ -610,7 +612,6 @@ void poop(){
 //task move(chassis_control);
 
 void autonomous(void) {
-  pid_task.resume();
   fwTask.resume();
   L1.setStopping(coast);
   L2.setStopping(coast);
@@ -619,6 +620,7 @@ void autonomous(void) {
   R2.setStopping(coast);
   R3.setStopping(coast);
   resetPID();
+  pid_task.resume();
   
   left_side();
 
@@ -644,7 +646,7 @@ void autonomous(void) {
 double fwSpeed = 70;
 bool revving=false;
 double modifier = 1;
-int fwGear = 1;
+int fwGear = 2;
 int reversed = 1;
 bool reversed_bool=false;
 bool holding = false;
@@ -734,28 +736,22 @@ void toggleBrake(){ //function that toggles the motors between braking and coast
 
 void setFwSpeed(){ //cycles between 3 target speeds for the flywheel
   fwGear++;
-  switch(fwGear){
-    case 1: fwSpeed=70;
-            break;
-    case 2: fwSpeed=75;
-            break;
-    default:
-            fwSpeed=65;
-            fwGear=0;
+  if(fwGear>3){
+    fwGear=1;
   }
-  g_target=fwSpeed;
+  fwSpeed=60+fwGear*5;
 }
 
 int printSpeed(){ //prints information about the flywheel to the controller screen
-  double ps=0;
+  // double ps=0;
   double pt=0;
   while(true){
-    if(std::abs(Shooter.velocity(pct))-1>std::abs(ps) || std::abs(Shooter.velocity(pct))+1<std::abs(ps)){
-      ps=Shooter.velocity(pct);
-      Controller1.Screen.clearLine(2);
-      Controller1.Screen.setCursor(2,1);
-      Controller1.Screen.print(" %.2f actual",Shooter.velocity(pct));
-    } 
+    // if(std::abs(Shooter.velocity(pct))-1>std::abs(ps) || std::abs(Shooter.velocity(pct))+1<std::abs(ps)){
+    //   ps=Shooter.velocity(pct);
+    //   Controller1.Screen.clearLine(2);
+    //   Controller1.Screen.setCursor(2,1);
+    //   Controller1.Screen.print(" %.2f actual",Shooter.velocity(pct));
+    // } 
     if(true){
       pt=fwSpeed;
       Controller1.Screen.clearLine(1);
@@ -768,10 +764,21 @@ int printSpeed(){ //prints information about the flywheel to the controller scre
   return 0;
 }
 
+int vibrate(){
+  wait(102,sec);
+  Controller1.rumble("-");
+  wait(1,sec);
+  // Controller1.rumble("-");
+  wait(1,sec);
+  // Controller1.rumble("--");
+  return 1;
+}
+
 void usercontrol(void)
 {
   pid_task.stop();
   fwenable=false;
+  task vibrateTask(vibrate);
   //move.stop();
   Controller1.ButtonY.pressed(setFwSpeed);
   // calls the loading function
@@ -779,6 +786,7 @@ void usercontrol(void)
   task printController(printSpeed);
   blocker.set(true);
   modifier = 1;
+  dinglebopper.set(true);
   while (1)
   {
     // creates 2 variables, giving them the controller's vertical axes' values
@@ -868,6 +876,7 @@ void usercontrol(void)
     }else{
       Intake.setVelocity(0,pct);
     }
+    
     
 
     // calls the toggle ke function

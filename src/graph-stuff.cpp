@@ -67,7 +67,7 @@ int tgraph(){
     return 1;
 }
 
-double g_target2=90;
+double g_target2=100;
 int fgraph(){
     t=0;
     g_target=12;

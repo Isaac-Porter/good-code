@@ -32,7 +32,7 @@ int pid(){
   
   while(true){
     timeMoment=timey.time(timeUnits::msec);
-
+    //printf("%f\n", output);
     if(pid_enable){
       input=(L1.position(degrees)+L2.position(degrees)+L3.position(degrees)+R1.position(degrees)+R2.position(degrees)+R3.position(degrees))/6;
       error=target-input;
@@ -77,6 +77,7 @@ int pid(){
         output=-pidLim;
       }
       
+      
       R1.spin(forward,(output-toutput)/1000,volt);
       R2.spin(forward,(output-toutput)/1000,volt);
       R3.spin(forward,(output-toutput)/1000,volt);
@@ -117,7 +118,32 @@ void resetPID(){
   tintegral=0;
   target=0;
   ttarget=0;
+  output=0;
+  toutput=0;
+  derivative=0;
+  tderivative=0;
 }
+
+void turn_to_goal(int direction){
+  
+  if(direction == 1){
+    ttarget=tinput+100;
+  }else{
+    ttarget=tinput-100;
+  }
+
+  goalTracker.takeSnapshot(red_goal);
+  if(goalTracker.largestObject.width>50 && goalTracker.largestObject.height>50){
+    ttarget=tinput+(goalTracker.largestObject.centerX-325);
+  }
+  goalTracker.takeSnapshot(blue_goal);
+  if(goalTracker.largestObject.width>50 && goalTracker.largestObject.height>50){
+    ttarget=tinput+(goalTracker.largestObject.centerX-325);
+  }
+}
+
+
+
 bool stopping=false;
 
 void stopFW(){

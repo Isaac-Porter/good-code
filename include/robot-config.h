@@ -18,6 +18,10 @@ extern digital_out launcher1;
 extern digital_out launcher2;
 extern encoder lateralEnc;
 extern encoder straightEnc;
+extern digital_out dinglebopper;
+extern vision goalTracker;
+extern vision::signature red_goal;
+extern vision::signature blue_goal;
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
