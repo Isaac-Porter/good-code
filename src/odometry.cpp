@@ -69,7 +69,7 @@ double yPosGlobal = Y_START;
 int positionTracking() {
   while(1) {
     //Get encoder values (DEGREES)
-    SPos = lateralEnc.position(rotationUnits::deg);
+    //SPos = lateralEnc.position(rotationUnits::deg);
     LPos = L1.position(rotationUnits::deg);
     RPos = R1.position(rotationUnits::deg);
 

@@ -14,14 +14,10 @@ extern motor Shooter;
 extern motor Intake;
 extern digital_out loader;
 extern digital_out blocker;
-extern digital_out launcher1;
-extern digital_out launcher2;
-extern encoder lateralEnc;
-extern encoder straightEnc;
+extern digital_out topExpansion;
+extern digital_out lowExpansion1;
+extern digital_out lowExpansion2;
 extern digital_out dinglebopper;
-extern vision goalTracker;
-extern vision::signature red_goal;
-extern vision::signature blue_goal;
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.

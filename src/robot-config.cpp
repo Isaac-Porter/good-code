@@ -21,18 +21,10 @@ encoder lateralEnc = encoder(Brain.ThreeWirePort.G);
 encoder straightEnc = encoder(Brain.ThreeWirePort.H);
 digital_out loader = digital_out(Brain.ThreeWirePort.A);
 digital_out blocker = digital_out(Brain.ThreeWirePort.B);
-digital_out launcher1 = digital_out(Brain.ThreeWirePort.D);
-digital_out launcher2 = digital_out(Brain.ThreeWirePort.C);
-digital_out dinglebopper = digital_out(Brain.ThreeWirePort.C);
-
-signature red_goal =
-    signature(1, -3441, -2785, -3113, 8975, 10355, 9665, 2.5, 0);
-signature blue_goal =
-    signature(1, -3441, -2785, -3113, 8975, 10355, 9665, 2.5, 0);
-signature Vision5__SIG_4 = signature(4, 0, 0, 0, 0, 0, 0, 2.5, 0);
-vision goalTracker =
-    vision(PORT5, 50, red_goal, blue_goal, Vision5__SIG_4,
-           Vision5__SIG_4, Vision5__SIG_4, Vision5__SIG_4, Vision5__SIG_4);
+digital_out topExpansion = digital_out(Brain.ThreeWirePort.C);
+digital_out lowExpansion1 = digital_out(Brain.ThreeWirePort.D);
+digital_out lowExpansion2 = digital_out(Brain.ThreeWirePort.E);
+digital_out dinglebopper = digital_out(Brain.ThreeWirePort.F);
 
 // VEXcode generated functions
 // define variable for remote controller enable/disable

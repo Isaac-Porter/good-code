@@ -124,26 +124,6 @@ void resetPID(){
   tderivative=0;
 }
 
-void turn_to_goal(int direction){
-  
-  if(direction == 1){
-    ttarget=tinput+100;
-  }else{
-    ttarget=tinput-100;
-  }
-
-  goalTracker.takeSnapshot(red_goal);
-  if(goalTracker.largestObject.width>50 && goalTracker.largestObject.height>50){
-    ttarget=tinput+(goalTracker.largestObject.centerX-325);
-  }
-  goalTracker.takeSnapshot(blue_goal);
-  if(goalTracker.largestObject.width>50 && goalTracker.largestObject.height>50){
-    ttarget=tinput+(goalTracker.largestObject.centerX-325);
-  }
-}
-
-
-
 bool stopping=false;
 
 void stopFW(){

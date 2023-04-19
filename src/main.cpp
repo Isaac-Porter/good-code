@@ -41,9 +41,9 @@ using namespace vex;
 
 competition Competition;
 
-task drawFieldTask(drawField);
+//task drawFieldTask(drawField);
 task odoTask(positionTracking);
-//task graphTask(fgraph);
+task graphTask(fgraph);
 task pid_task(pid);
 task fwTask(flywheel_pid);
 
@@ -258,12 +258,13 @@ void pewpew3(int d){
     if(!retry){
       t=0;
     }
-    while((Shooter.velocity(pct)<100 || t<100) && t<500){
+    t=0;
+    while(/*(Shooter.velocity(pct)<100 || t<100) &&*/ t<400){
       wait(10,msec);//waits until the flywheel is back up to target speed
       t++;
     }
     wait(50,msec);
-    if(Shooter.velocity(pct)>100){
+    if(/*Shooter.velocity(pct)>100*/true){
       loader.set(true); 
       wait(200,msec);  // actuates the piston to launch the disc
       loader.set(false);
@@ -304,9 +305,7 @@ void pewpew4(int d){
   blocker.set(true);
 }
 
-
-
-void left_side(){
+void left_side_old(){
   //start spinning the flywheel
   //Shooter.spin(forward,100,pct);
   Shooter.spin(fwd,13,volt);
@@ -368,6 +367,23 @@ void left_side(){
   wait(700,msec);
   pewpew2(1);
   shooting=false;
+}
+
+void left_side(){
+
+  target=1200;
+  task intakeTask(intakeThingy);
+  shooting=true;
+  ftarget=95;
+  ew();
+  ttarget=-250;
+  etw();
+  pewpew2(3);
+  ttarget=-500;
+  etw();
+  target=1300;
+  ew();
+
 }
 
 void right_side(){
@@ -584,8 +600,7 @@ void skill(){
   ew();
   ttarget=-440;
   etw();
-  launcher1.set(true);
-  launcher2.set(true);
+  topExpansion.set(true);
   wait(500,msec);
   resetPID();
   pidLim=6000;
@@ -736,10 +751,22 @@ void toggleBrake(){ //function that toggles the motors between braking and coast
 
 void setFwSpeed(){ //cycles between 3 target speeds for the flywheel
   fwGear++;
-  if(fwGear>3){
-    fwGear=1;
+  switch (fwGear)
+  {
+    case 1:
+            fwSpeed=65;
+            break;
+    case 2:
+            fwSpeed=70;
+            break;
+    case 3:
+            fwSpeed=90;
+            break;
+    default:
+            fwSpeed=-100;
+            fwGear=0;
+            break;
   }
-  fwSpeed=60+fwGear*5;
 }
 
 int printSpeed(){ //prints information about the flywheel to the controller screen
@@ -764,6 +791,10 @@ int printSpeed(){ //prints information about the flywheel to the controller scre
   return 0;
 }
 
+void toggleBopper(){
+  dinglebopper.set(!dinglebopper.value());
+}
+
 int vibrate(){
   wait(102,sec);
   Controller1.rumble("-");
@@ -782,11 +813,11 @@ void usercontrol(void)
   //move.stop();
   Controller1.ButtonY.pressed(setFwSpeed);
   // calls the loading function
+  Controller1.ButtonRight.pressed(toggleBopper);
   Controller1.ButtonR1.pressed(pewpew);
   task printController(printSpeed);
   blocker.set(true);
   modifier = 1;
-  dinglebopper.set(true);
   while (1)
   {
     // creates 2 variables, giving them the controller's vertical axes' values
@@ -876,18 +907,9 @@ void usercontrol(void)
     }else{
       Intake.setVelocity(0,pct);
     }
-    
-    
-
-    // calls the toggle ke function
-    //Controller1.ButtonRight.pressed(toggleBrake);
-    if(Controller1.ButtonRight.pressing() && !fwenable){
-      Shooter.setVelocity(-100,pct);
-    }
 
     if(Controller1.ButtonX.pressing() && Controller1.ButtonUp.pressing()){
-      launcher1.set(true);
-      launcher2.set(true);
+      topExpansion.set(true);
     }
 
     // spins all of the motors
