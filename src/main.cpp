@@ -369,7 +369,7 @@ void left_side_old(){
   shooting=false;
 }
 
-void left_side(){
+void left_side_safe(){
 
   target=1200;
   task intakeTask(intakeThingy);
@@ -383,6 +383,66 @@ void left_side(){
   etw();
   target=1300;
   ew();
+
+}
+void left_side_danger_is_my_middle_name(){
+
+  target=-1850;
+  pidLim=12000;
+  shooting=true;
+  turning=false;
+  ftarget=82; //fix
+  wait(100,msec);
+  ew();
+
+  turning=true;
+  ttarget=-340;
+  etw();
+  
+  resetPID();
+  pewpew2(2);
+  ftarget=92;
+
+  ttarget=640;
+  etw();
+  task intakeTask(intakeThingy);
+  pidLim=8000;
+  target=1900;
+  wait(100,msec);
+  ew();
+  pidLim=12000;
+
+  ttarget=120;
+  etw();
+  intakeTask.stop();
+  task intakeTask2(intakeThingy2);
+
+  pewpew2(3);
+  intakeTask2.stop();
+
+  ttarget=685;
+  etw();
+
+  pid_task.stop();
+  R1.spin(forward, 100, percent);
+  R2.spin(forward, 100, percent);
+  R3.spin(forward, 100, percent);
+  L1.spin(forward, 100, percent);
+  L2.spin(forward, 100, percent);
+  L3.spin(forward, 100, percent);
+  wait(335, msec);
+  L1.stop();
+  L2.stop();
+  L3.stop();
+
+  Intake.spin(forward, -100, percent);
+  //wait(320, msec);
+  wait(300, msec);
+  R1.stop();
+  R2.stop();
+  R3.stop();
+  wait(500, msec);
+  Intake.stop();
 
 }
 
@@ -637,7 +697,7 @@ void autonomous(void) {
   resetPID();
   pid_task.resume();
   
-  left_side();
+  left_side_danger_is_my_middle_name();
 
   // shooting=true;
   // ftarget=90;
