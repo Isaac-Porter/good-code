@@ -63,6 +63,13 @@ void pre_auton(void) {
   pid_task.suspend();
   fwTask.suspend();
   dinglebopper.set(false);
+
+  L1.setStopping(brake);
+  L2.setStopping(brake);
+  L3.setStopping(brake);
+  R1.setStopping(brake);
+  R2.setStopping(brake);
+  R3.setStopping(brake);
   
   /*
   lcdButton b1(50,50,100,50,"WP","#123456");
@@ -232,7 +239,7 @@ void pewpew2(int d){
       t=0;
     // }
     
-    while((std::abs(ferror1)>0.5 || t<40) && t<1000){
+    while((std::abs(ferror1)>0.5 || t<20) && t<200){
       wait(10,msec);//waits until the flywheel is back up to target speed
       t++;
     }
@@ -313,12 +320,12 @@ void pewpew5(int d){
       t=0;
     }
     
-    while((std::abs(ferror1)>1 || t<40 || std::abs(fderivative)>1) && t<1000){
+    while((std::abs(ferror1)>1 || t<40 || std::abs(fderivative)>1 || fderivative<0) && t<1000){
       wait(10,msec);//waits until the flywheel is back up to target speed
       t++;
     }
     wait(50,msec);
-    if(std::abs(ferror1)>1 || std::abs(fderivative)>1){
+    if(std::abs(ferror1)>1 || std::abs(fderivative)>1  || fderivative<0){
       shot=true;
       loader.set(true); 
       wait(200,msec);  // actuates the piston to launch the disc
@@ -397,22 +404,6 @@ void left_side_old(){
   shooting=false;
 }
 
-void left_side_safe(){
-
-  target=1200;
-  task intakeTask(intakeThingy);
-  shooting=true;
-  ftarget=95;
-  ew();
-  ttarget=-250;
-  etw();
-  pewpew2(3);
-  ttarget=-500;
-  etw();
-  target=1300;
-  ew();
-
-}
 void left_side_danger_is_my_middle_name(){
 
   target=-1850;
@@ -424,14 +415,14 @@ void left_side_danger_is_my_middle_name(){
   ew();
 
   turning=true;
-  ttarget=-330;
+  ttarget=-335;
   etw();
   
   resetPID();
   pewpew2(2);
   shooting=false;
 
-  ttarget=610;
+  ttarget=615;
   etw();
   shooting=true;
   ftarget=92;
@@ -447,10 +438,10 @@ void left_side_danger_is_my_middle_name(){
   intakeTask.stop();
   task intakeTask2(intakeThingy2);
 
-  pewpew2(3);
+  pewpew2(2);
   intakeTask2.stop();
 
-  ttarget=685;
+  ttarget=690;
   etw();
 
   pid_task.stop();
@@ -472,6 +463,63 @@ void left_side_danger_is_my_middle_name(){
   R2.stop();
   R3.stop();
   wait(500, msec);
+  Intake.stop();
+
+}
+
+void left_side_safe(){
+
+  target=1400;
+  pidLim=3500;
+  shooting=true;
+  turning=false;
+  task intakeTask(intakeThingy);
+  ftarget=90; //fix
+  wait(100,msec);
+  ew();
+  pidLim=12000;
+  target=800;
+  wait(200,msec);
+  ew();
+  
+  turning=true;
+  resetPID();
+  wait(500,msec);
+  ttarget=1060;
+  etw();
+
+  intakeTask.stop();
+  task intakeTask2(intakeThingy2);
+  pewpew2(3);
+  shooting=false;
+  intakeTask2.stop();
+
+  ttarget=1600;
+  etw();
+
+  target=1600;
+  wait(300,msec);
+  ew();
+
+  pid_task.stop();
+  R1.spin(forward, 100, percent);
+  R2.spin(forward, 100, percent);
+  R3.spin(forward, 100, percent);
+  L1.spin(forward, 100, percent);
+  L2.spin(forward, 100, percent);
+  L3.spin(forward, 100, percent);
+  //wait(290, msec);
+  L1.stop();
+  L2.stop();
+  L3.stop();
+
+  Intake.spin(forward, -100, percent);
+  //wait(320, msec);
+  wait(700, msec);
+  R1.stop();
+  R2.stop();
+  R3.stop();
+  wait(200, msec);
   Intake.stop();
 
 }
@@ -701,13 +749,8 @@ void skill(){
 }
 
 void test(){
-  //shooting=true;
-  //ftarget=85;
-  Shooter.spin(forward,11,volt);
-  wait(2,sec);
-  pewpew3(3);
-  shooting=false;
-  avging=false;
+  ttarget=500;
+  etw();
 }
 
 void poop(){
@@ -722,16 +765,17 @@ void poop(){
 
 void autonomous(void) {
   fwTask.resume();
-  L1.setStopping(coast);
-  L2.setStopping(coast);
-  L3.setStopping(coast);
-  R1.setStopping(coast);
-  R2.setStopping(coast);
-  R3.setStopping(coast);
+  // L1.setStopping(coast);
+  // L2.setStopping(coast);
+  // L3.setStopping(coast);
+  // R1.setStopping(coast);
+  // R2.setStopping(coast);
+  // R3.setStopping(coast);
   resetPID();
   pid_task.resume();
   
-  test();
+  // left_side_danger_is_my_middle_name();
+  left_side_safe();
 
   // shooting=true;
   // ftarget=90;
@@ -904,11 +948,21 @@ int vibrate(){
   return 1;
 }
 
+void set_coast(){
+  L1.setStopping(coast);
+  L2.setStopping(coast);
+  L3.setStopping(coast);
+  R1.setStopping(coast);
+  R2.setStopping(coast);
+  R3.setStopping(coast);
+}
+
 void usercontrol(void)
 {
   pid_task.stop();
   fwenable=false;
   task vibrateTask(vibrate);
+  set_coast();
   //move.stop();
   Controller1.ButtonY.pressed(setFwSpeed);
   Controller1.ButtonA.pressed(incFwSpeed);
@@ -979,13 +1033,13 @@ void usercontrol(void)
     }
 
     // calls the functions created earlier when their respective buttons are pressed
-    /*
+    
     if(Controller1.ButtonUp.pressing()){
       buttonForward();
     }
     if(Controller1.ButtonLeft.pressing()){
       buttonBackward();
-    }*/
+    }
 
     // runs the flywheel at the target speed when R2 is pressed
     if(Controller1.ButtonR2.pressing()){

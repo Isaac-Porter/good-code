@@ -68,7 +68,7 @@ int tgraph(){
     return 1;
 }
 
-double g_target2=85;
+double g_target2=90;
 double average=0;
 double g_input3=0;
 int count2=0;
