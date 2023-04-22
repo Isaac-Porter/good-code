@@ -485,8 +485,10 @@ void left_side_safe(){
   turning=true;
   resetPID();
   wait(500,msec);
-  ttarget=1060;
-  etw();
+  for (int i=0; i<4; i++){
+    ttarget+=265;
+    etw();
+  }
 
   intakeTask.stop();
   task intakeTask2(intakeThingy2);
@@ -1034,12 +1036,12 @@ void usercontrol(void)
 
     // calls the functions created earlier when their respective buttons are pressed
     
-    if(Controller1.ButtonUp.pressing()){
-      buttonForward();
-    }
-    if(Controller1.ButtonLeft.pressing()){
-      buttonBackward();
-    }
+    // if(Controller1.ButtonUp.pressing()){
+    //   buttonForward();
+    // }
+    // if(Controller1.ButtonLeft.pressing()){
+    //   buttonBackward();
+    // }
 
     // runs the flywheel at the target speed when R2 is pressed
     if(Controller1.ButtonR2.pressing()){
