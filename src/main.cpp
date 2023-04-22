@@ -752,7 +752,7 @@ void autonomous(void) {
   */
 }
 
-double fwSpeed = 70;
+double fwSpeed = 65;
 bool revving=false;
 double modifier = 1;
 int fwGear = 2;
@@ -848,19 +848,24 @@ void setFwSpeed(){ //cycles between 3 target speeds for the flywheel
   switch (fwGear)
   {
     case 1:
-            fwSpeed=65;
+            fwSpeed=60;
             break;
     case 2:
-            fwSpeed=70;
-            break;
-    case 3:
-            fwSpeed=90;
+            fwSpeed=65;
             break;
     default:
-            fwSpeed=-100;
+            fwSpeed=70;
             fwGear=0;
             break;
   }
+}
+
+void incFwSpeed(){
+  fwSpeed += 1;
+}
+
+void decFwSpeed(){
+  fwSpeed -= 1;
 }
 
 int printSpeed(){ //prints information about the flywheel to the controller screen
@@ -906,6 +911,8 @@ void usercontrol(void)
   task vibrateTask(vibrate);
   //move.stop();
   Controller1.ButtonY.pressed(setFwSpeed);
+  Controller1.ButtonA.pressed(incFwSpeed);
+  Controller1.ButtonLeft.pressed(decFwSpeed);
   // calls the loading function
   Controller1.ButtonRight.pressed(toggleBopper);
   Controller1.ButtonR1.pressed(pewpew);
