@@ -232,17 +232,17 @@ void pewpew2(int d){
       t=0;
     // }
     
-    while((std::abs(ferror1)>1 || t<40) && t<80 ){
+    while((std::abs(ferror1)>0.5 || t<40) && t<1000){
       wait(10,msec);//waits until the flywheel is back up to target speed
       t++;
     }
     // wait(50,msec);
     //if(std::abs(ferror1)<1){
+    shot=true;
     loader.set(true); 
     wait(200,msec);  // actuates the piston to launch the disc
     loader.set(false);
     retry=false;
-    shot=true;
     // //}else{
     //   retry=true;
     //   i--;
@@ -259,7 +259,7 @@ void pewpew3(int d){
       t=0;
     }
     t=0;
-    while(/*(Shooter.velocity(pct)<100 || t<100) &&*/ t<400){
+    while(/*(Shooter.velocity(pct)<100 || t<100) &&*/ t<100){
       wait(10,msec);//waits until the flywheel is back up to target speed
       t++;
     }
@@ -304,6 +304,34 @@ void pewpew4(int d){
   }
   blocker.set(true);
 }
+void pewpew5(int d){
+  int t=0;
+  bool retry=false;
+  blocker.set(false);
+  for(int i=0; i<d; i++){
+    if(!retry){
+      t=0;
+    }
+    
+    while((std::abs(ferror1)>1 || t<40 || std::abs(fderivative)>1) && t<1000){
+      wait(10,msec);//waits until the flywheel is back up to target speed
+      t++;
+    }
+    wait(50,msec);
+    if(std::abs(ferror1)>1 || std::abs(fderivative)>1){
+      shot=true;
+      loader.set(true); 
+      wait(200,msec);  // actuates the piston to launch the disc
+      loader.set(false);
+      retry=false;
+    }else{
+      retry=true;
+      i--;
+    }
+  }
+  blocker.set(true);
+}
+
 
 void left_side_old(){
   //start spinning the flywheel
@@ -396,23 +424,25 @@ void left_side_danger_is_my_middle_name(){
   ew();
 
   turning=true;
-  ttarget=-340;
+  ttarget=-330;
   etw();
   
   resetPID();
   pewpew2(2);
-  ftarget=92;
+  shooting=false;
 
-  ttarget=640;
+  ttarget=610;
   etw();
+  shooting=true;
+  ftarget=92;
   task intakeTask(intakeThingy);
-  pidLim=8000;
-  target=1900;
+  pidLim=7000;
+  target=2000;
   wait(100,msec);
   ew();
   pidLim=12000;
 
-  ttarget=120;
+  ttarget=135;
   etw();
   intakeTask.stop();
   task intakeTask2(intakeThingy2);
@@ -430,7 +460,7 @@ void left_side_danger_is_my_middle_name(){
   L1.spin(forward, 100, percent);
   L2.spin(forward, 100, percent);
   L3.spin(forward, 100, percent);
-  wait(335, msec);
+  wait(290, msec);
   L1.stop();
   L2.stop();
   L3.stop();
@@ -671,9 +701,13 @@ void skill(){
 }
 
 void test(){
-  target=1500;
-  wait(500,msec);
-  pw();
+  //shooting=true;
+  //ftarget=85;
+  Shooter.spin(forward,11,volt);
+  wait(2,sec);
+  pewpew3(3);
+  shooting=false;
+  avging=false;
 }
 
 void poop(){
@@ -697,7 +731,7 @@ void autonomous(void) {
   resetPID();
   pid_task.resume();
   
-  left_side_danger_is_my_middle_name();
+  test();
 
   // shooting=true;
   // ftarget=90;

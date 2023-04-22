@@ -11,6 +11,7 @@ extern double derivative;
 extern double error;
 extern double tderivative;
 extern double terror;
+extern bool avging;
 
 extern bool fwenable, shooting;
 extern double fwpi, fwpp;

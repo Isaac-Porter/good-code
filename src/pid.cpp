@@ -1,4 +1,5 @@
 #include "pid.h"
+#include "graph-stuff.h"
 
 double kp=15,ki=0.1,kd=5;//5
 double integral=0,derivative=0;
@@ -140,6 +141,7 @@ void stopFW(){
 
 bool fwenable=true;
 bool shooting=false;
+bool avging=false;
 double fwpi=0, fwpp=0;
 
 double fkp=500,fki=1.05,fkd=10;
@@ -164,16 +166,15 @@ int flywheel_pid(){
     timeMoment=timey.time(timeUnits::msec);
     //fwpi=Shooter.position(rotationUnits::rev)*240;
     //finput=fwpi-fwpp;
-    pin=finput;
-    // if(std::abs(finput-pin)>0.25){
-    //   rev_input=pin+0.25*((finput-pin)/std::abs(finput-pin));
-    //   pin=rev_input;
-    // }else{
-      rev_input=finput;
-    // }
+    pin=rev_input;
+
     finput=Shooter.velocity(pct);
-    //g_input=finput;
-    //fwpp=fwpi;
+    if(std::abs(finput-g_input3)<2){
+      rev_input=finput;
+    }else{
+      rev_input=g_input3;
+    }
+
     if(shooting && rev_initial){
 
       Shooter.spin(fwd, 12, volt);
@@ -188,10 +189,11 @@ int flywheel_pid(){
       //Shooter.spin(fwd,11,volt);
       //Shooter.spin(fwd,90,pct);
 
-      if(rev_input>ftarget-3){
+      if(rev_input>ftarget-5){
         // Shooter.spin(fwd,rev_input/8+(ftarget-rev_input)/1.5,volt);
-        fintegral=9300;
+        fintegral=ftarget*200-7000;
         rev_initial=false;
+        avging=true;
       }else{
         wait(100,msec);
         timeElapsed+=100;
