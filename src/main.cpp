@@ -232,7 +232,7 @@ void pewpew2(int d){
       t=0;
     // }
     
-    while((std::abs(ferror1)>0.5 || t<40) && t<1000){
+    while((std::abs(ferror1)>0.5 || t<40) && t<400){
       wait(10,msec);//waits until the flywheel is back up to target speed
       t++;
     }
@@ -398,21 +398,74 @@ void left_side_old(){
 }
 
 void left_side_safe(){
-
-  target=1200;
-  task intakeTask(intakeThingy);
+  turning=true;
   shooting=true;
-  ftarget=95;
+  ftarget=92;
+  ttarget=-268;
   ew();
-  ttarget=-250;
-  etw();
+  pewpew2(2);
+  shooting=false;
+
+  ttarget=-1500;
+  wait(100,msec);
+  ew();
+  resetPID();
+  wait(2000,msec);
+
+  target=1400;
+  pidLim=3500;
+  shooting=true;
+  turning=false;
+  task intakeTask(intakeThingy);
+  ftarget=90; //fix
+  wait(100,msec);
+  ew();
+  pidLim=12000;
+  target=800;
+  wait(200,msec);
+  ew();
+  
+  turning=true;
+  resetPID();
+  wait(500,msec);
+  ttarget=1060;
+
+  intakeTask.stop();
+  task intakeTask2(intakeThingy2);
   pewpew2(3);
-  ttarget=-500;
+  shooting=false;
+  intakeTask2.stop();
+
+  ttarget=1600;
   etw();
-  target=1300;
+
+  target=1600;
+  wait(300,msec);
   ew();
+
+  pid_task.stop();
+  R1.spin(forward, 100, percent);
+  R2.spin(forward, 100, percent);
+  R3.spin(forward, 100, percent);
+  L1.spin(forward, 100, percent);
+  L2.spin(forward, 100, percent);
+  L3.spin(forward, 100, percent);
+  //wait(290, msec);
+  L1.stop();
+  L2.stop();
+  L3.stop();
+
+  Intake.spin(forward, -100, percent);
+  //wait(320, msec);
+  wait(700, msec);
+  R1.stop();
+  R2.stop();
+  R3.stop();
+  wait(200, msec);
+  Intake.stop();
 
 }
+
 void left_side_danger_is_my_middle_name(){
 
   target=-1850;
@@ -424,14 +477,14 @@ void left_side_danger_is_my_middle_name(){
   ew();
 
   turning=true;
-  ttarget=-330;
+  ttarget=-335;
   etw();
   
   resetPID();
   pewpew2(2);
   shooting=false;
 
-  ttarget=610;
+  ttarget=615;
   etw();
   shooting=true;
   ftarget=92;
@@ -447,10 +500,10 @@ void left_side_danger_is_my_middle_name(){
   intakeTask.stop();
   task intakeTask2(intakeThingy2);
 
-  pewpew2(3);
+  pewpew2(2);
   intakeTask2.stop();
 
-  ttarget=685;
+  ttarget=690;
   etw();
 
   pid_task.stop();
@@ -718,6 +771,30 @@ void poop(){
   pewpew_auto(1,40);
 }
 
+void weird_turning_test(){
+  resetPID();
+  turning=true;
+  ttarget=1000;
+  ew();
+  turning=false;
+
+  // the following worked for point turning, so there's something going wrong in the pid
+  // pid_task.stop();
+  // R1.spin(forward, 100, percent);
+  // R2.spin(forward, 100, percent);
+  // R3.spin(forward, 100, percent);
+  // L1.spin(reverse, 100, percent);
+  // L2.spin(reverse, 100, percent);
+  // L3.spin(reverse, 100, percent);
+  // wait(2000, msec);
+  // R1.stop();
+  // R2.stop();
+  // R3.stop();
+  // L1.stop();
+  // L2.stop();
+  // L3.stop();
+}
+
 //task move(chassis_control);
 
 void autonomous(void) {
@@ -731,7 +808,8 @@ void autonomous(void) {
   resetPID();
   pid_task.resume();
   
-  test();
+  // left_side_safe();
+  weird_turning_test();
 
   // shooting=true;
   // ftarget=90;

@@ -144,7 +144,7 @@ bool shooting=false;
 bool avging=false;
 double fwpi=0, fwpp=0;
 
-double fkp=500,fki=1.05,fkd=10;
+double fkp=500,fki=1.05,fkd=25;
 double fintegral=0,fderivative=0;
 double ferror1=0,fprevError=0,ftarget=0,foutput=0,finput=0;
 double pout=0;
