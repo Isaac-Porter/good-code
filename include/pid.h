@@ -3,6 +3,7 @@
 extern double target;
 extern double ttarget;
 extern bool turning;
+extern bool straighting;
 extern bool atTarget;
 extern bool atAngle;
 extern double pidLim;

@@ -13,6 +13,7 @@ bool atTarget=false;
 bool atAngle=false;
 
 bool turning=true;
+bool straighting=true;
 
 double pidLim=12000;
 bool pid_enable=true;
@@ -35,16 +36,20 @@ int pid(){
     timeMoment=timey.time(timeUnits::msec);
     //printf("%f\n", output);
     if(pid_enable){
-      input=(L1.position(degrees)+L2.position(degrees)+L3.position(degrees)+R1.position(degrees)+R2.position(degrees)+R3.position(degrees))/6;
-      error=target-input;
-      if(prevError==0 && error!=0){
+      if(straighting){
+        input=(L1.position(degrees)+L2.position(degrees)+L3.position(degrees)+R1.position(degrees)+R2.position(degrees)+R3.position(degrees))/6;
+        error=target-input;
+        if(prevError==0 && error!=0){
+          prevError=error;
+        }
+        integral+=error;
+        derivative=error-prevError;
         prevError=error;
+        
+        output=kp*error+ki*integral+kd*derivative;
+      }else{
+        output=0;
       }
-      integral+=error;
-      derivative=error-prevError;
-      prevError=error;
-      
-      output=kp*error+ki*integral+kd*derivative;
 
       
       tinput=(L1.position(degrees)+L2.position(degrees)+L3.position(degrees)-R1.position(degrees)-R2.position(degrees)-R3.position(degrees))/6;

@@ -701,13 +701,9 @@ void skill(){
 }
 
 void test(){
-  //shooting=true;
-  //ftarget=85;
-  Shooter.spin(forward,11,volt);
-  wait(2,sec);
-  pewpew3(3);
-  shooting=false;
-  avging=false;
+  straighting=false;
+  ttarget=1000;
+  etw();
 }
 
 void poop(){
