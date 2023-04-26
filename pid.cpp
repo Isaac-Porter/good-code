@@ -13,7 +13,6 @@ bool atTarget=false;
 bool atAngle=false;
 
 bool turning=true;
-bool straighting=true;
 
 double pidLim=12000;
 bool pid_enable=true;
@@ -36,20 +35,16 @@ int pid(){
     timeMoment=timey.time(timeUnits::msec);
     //printf("%f\n", output);
     if(pid_enable){
-      if(straighting){
-        input=(L1.position(degrees)+L2.position(degrees)+L3.position(degrees)+R1.position(degrees)+R2.position(degrees)+R3.position(degrees))/6;
-        error=target-input;
-        if(prevError==0 && error!=0){
-          prevError=error;
-        }
-        integral+=error;
-        derivative=error-prevError;
+      input=(L1.position(degrees)+L2.position(degrees)+L3.position(degrees)+R1.position(degrees)+R2.position(degrees)+R3.position(degrees))/6;
+      error=target-input;
+      if(prevError==0 && error!=0){
         prevError=error;
-        
-        output=kp*error+ki*integral+kd*derivative;
-      }else{
-        output=0;
       }
+      integral+=error;
+      derivative=error-prevError;
+      prevError=error;
+      
+      output=kp*error+ki*integral+kd*derivative;
 
       
       tinput=(L1.position(degrees)+L2.position(degrees)+L3.position(degrees)-R1.position(degrees)-R2.position(degrees)-R3.position(degrees))/6;
@@ -149,8 +144,10 @@ bool shooting=false;
 bool avging=false;
 double fwpi=0, fwpp=0;
 
+// double fkp=300,fki=1.15,fkd=45;
 double fkp=500,fki=1.05,fkd=25;
 double fintegral=0,fderivative=0;
+// double tbhInitial=1, tbh=tbhInitial, tbhThreshold=4;
 double ferror1=0,fprevError=0,ftarget=0,foutput=0,finput=0;
 double pout=0;
 double output_revised=0;
@@ -228,12 +225,19 @@ int flywheel_pid(){
         fintegral=12000;
       }*/
       
+      // if (fprevError/std::abs(fprevError) != ferror1/std::abs(ferror1)) {
+      //   tbh *= 9/10;
+      // }
+      
+      // if (std::abs(ferror1) > tbhThreshold) {
+      //   tbh = tbhInitial;
+      // }
+
       fderivative=ferror1-fprevError;
       fprevError=ferror1;
       
       pout=foutput;
-      foutput=fkp*ferror1+fki*fintegral+fkd*fderivative;
-      
+      foutput=fkp*ferror1+fki*fintegral/**tbh*/+fkd*fderivative;
       
       // if(std::abs(foutput-pout)>5){
       //   output_revised=pout+5*((foutput-pout)/std::abs(foutput-pout));
